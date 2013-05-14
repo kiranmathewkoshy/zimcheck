@@ -79,7 +79,7 @@ void parse_url(std::string url)            //Function to parse a url and to retu
     }
     for(int i=0;i<counter;i++)
     {
-        std::cout<<"\n"<<i<<" . "<<link[i];
+        std::cout<<std::endl<<i<<" . "<<link[i];
     }
     link.clear();
     return ;
@@ -105,14 +105,14 @@ int main(int argc, char* argv[])
 	try
 	{
    		zim::File f(filename);
-        std::cout<<"Reading ZIM file...\n";
+        std::cout<<"Reading ZIM file..."<<std::endl;
 		for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
 		{
             title_list.push_back(it->getTitle());
 		}
-		std::cout<<title_list.size()<<" articles were read from the ZIM file.\n";
+		std::cout<<title_list.size()<<" articles were read from the ZIM file."<<std::endl;
 
-		std::cout<<"Searching for duplicates..\n";
+		std::cout<<"Searching for duplicates.."<<std::endl;
 		for(int i=0;i<title_list.size();i++)
 		{
             for(int j=0;j<title_list.size()-1;j++)
@@ -129,10 +129,10 @@ int main(int argc, char* argv[])
         for(int i=0;i<title_list.size()-1;i++)
         {
             if(title_list[i]==title_list[i+1])
-                std::cout<<"Duplicate Entry found\n";
+                std::cout<<"Duplicate Entry found"<<std::endl;
         }
         if(!found)
-            std::cout<<"No duplicates entries found\n";
+            std::cout<<"No duplicates entries found"<<std::endl;
 
         for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
 		{
@@ -147,16 +147,16 @@ int main(int argc, char* argv[])
                     if(!result)
                     {
                         ct++;
-                        std::cout<<"\nExternal URl: "<<s[i]<<"\n";
+                        std::cout<<std::endl<<"External URl: "<<s[i]<<std::endl;
                         //getchar();
                     }
                 }
                 s.clear();
 
-                std::cout<<"\n"<<it->getUrl()<<" : "<<s.size()<<" links found; "<<ct<<" are external";
+                std::cout<<std::endl<<it->getUrl()<<" : "<<s.size()<<" links found; "<<ct<<" are external";
             }
 		}
-        std::cout<<"\n";
+        std::cout<<std::endl;
 	}
 	catch (const std::exception& e)
 	{
