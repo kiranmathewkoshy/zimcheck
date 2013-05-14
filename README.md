@@ -14,8 +14,8 @@ Objective: To check if a ZIM file has:
 3. redundant content
 4. online dependencies.
 
-As  of 13th May 2013,
+As  of 14th May 2013,
 
 1. A method for obtaining the HTML links from the webpage has been completed.
-2. 
+2. A method to  check if a URL is present in a ZIM file.
 
