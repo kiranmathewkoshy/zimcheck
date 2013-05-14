@@ -120,6 +120,23 @@ int main(int argc, char* argv[])
             return 0;
         }
 
+
+
+        //Test 2: Dead internal URLs
+        std::cout<<"\nTest 2: Dead Internal URLs\n";
+        std::vector<std::string> output;
+        for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
+        {
+            if(it->getMimeType()=="text/html")
+            {
+                output=get_links(it->getPage());
+                for(int i=0;i<output.size();i++)
+                {
+                    ;
+                }
+            }
+        }
+
 	}
 	catch (const std::exception& e)
 	{
