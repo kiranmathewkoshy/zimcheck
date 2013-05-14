@@ -49,6 +49,42 @@ std::vector <std::string> get_links(std::string page)           //Returns a vect
     return links;
 }
 
+void parse_url(std::string url)            //Function to parse a url and to return the domain name.
+{
+    std::vector<std::string> link;
+    link.clear();
+    int counter=0;
+    for(int i=0;i<url.size();i++)
+    {
+        if (url[i]=='.')
+            counter++;
+    }
+    link.resize(counter);
+    int i=0;
+    int pos=0;
+    for(i=0;i<counter;i++)
+    {
+        link[i]="";
+    }
+    i=0;
+    while(i<counter)
+    {
+        if(url[pos]!='.')
+            link[i]+=(char)url[pos];
+        else
+        {
+            i++;
+        }
+        pos++;
+    }
+    for(int i=0;i<counter;i++)
+    {
+        std::cout<<"\n"<<i<<" . "<<link[i];
+    }
+    link.clear();
+    return ;
+}
+
 bool verify_url(zim::File f,std::string url)        //Returns if a URL is present in a file.
 {
     for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
@@ -61,7 +97,7 @@ bool verify_url(zim::File f,std::string url)        //Returns if a URL is presen
 
 int main(int argc, char* argv[])
 {
-    std::string filename="Wikipedia.zim";
+    std::string filename="wikipedia.zim";
     if(argc==2)
         filename=argv[1];
     std::vector<std::string> title_list;
@@ -98,9 +134,6 @@ int main(int argc, char* argv[])
         if(!found)
             std::cout<<"No duplicates entries found\n";
 
-
-
-
         for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
 		{
             if(it->getMimeType()=="text/html")
@@ -110,13 +143,16 @@ int main(int argc, char* argv[])
                 for(int i=0;i<s.size();i++)
                 {
                     bool result= verify_url(f,s[i]);
+                    parse_url(s[i]);
                     if(!result)
                     {
                         ct++;
                         std::cout<<"\nExternal URl: "<<s[i]<<"\n";
-                        getchar();
+                        //getchar();
                     }
                 }
+                s.clear();
+
                 std::cout<<"\n"<<it->getUrl()<<" : "<<s.size()<<" links found; "<<ct<<" are external";
             }
 		}
