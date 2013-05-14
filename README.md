@@ -4,20 +4,29 @@ zimcheck
 Written by : Kiran Mathew Koshy
 (kiranmathewkoshy@gmail.com)
 
-Please note that this program is under heavy development and all releases may not be stable.
+Please note that this program is under heavy development and all versions may not be stable.
 
-A tool to check the quality of a ZIM file.
 
-https://bugzilla.wikimedia.org/show_bug.cgi?id=47407
+1 - Internal checksum: launch internal checksum verification
 
-Objective: To check if a ZIM file has:
-1. A Welcome page.
-2. Broken HTML links
-3. redundant content
-4. online dependencies.
+2 - Dead internal urls: check all ZIM internal urls an verify if the target
+exists. That means css/javascript loading urls, images src and url href.... an
+probably a few others
 
-As  of 14th May 2013,
+3 - Checks that urls in CSS files are not external, and internal urls are valid
 
-1. A method for obtaining the HTML links from the webpage has been completed.
-2. A method to  check if a URL is present in a ZIM file.
+4 - Veryfy that there is not online dependencies (images, javascript/css
+loading, ....) in HTML code
 
+5 - Check if the following metadata entries are there: title, creator,
+publisher, date, description language. Check if date and language are in the
+correct format.http://openzim.org/wiki/Metadata 
+
+6 - Verify that the favicon is there 
+
+7 - Verify the main page header entry is defined and point to a valid content.
+
+8 - Check duplicate content: be sure that the same content is not available
+under two different url. For example two times the same picture.
+
+9 - Verify that internal urls are not absolute
