@@ -97,66 +97,29 @@ bool verify_url(zim::File f,std::string url)        //Returns if a URL is presen
 
 int main(int argc, char* argv[])
 {
-    std::string filename="wikipedia.zim";
-    if(argc==2)
-        filename=argv[1];
-    std::vector<std::string> title_list;
-    std::string temp;
+    if (argc <= 1)
+    {
+       std::cerr << " Error opening File.\n";
+       std::cerr << " Help: Zimcheck\n";
+       std::cerr << " A tool to check the quality of a ZIM file.\n";
+       std::cerr << " Written by : Kiran Mathew Koshy\n";
+       return 0;
+    }
 	try
 	{
-   		zim::File f(filename);
-        std::cout<<"Reading ZIM file..."<<std::endl;
-		for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
-		{
-            title_list.push_back(it->getTitle());
-		}
-		std::cout<<title_list.size()<<" articles were read from the ZIM file."<<std::endl;
+   		zim::File f(argv[1]);
+		std::cout<<"\nRunning Tests...";
 
-		std::cout<<"Searching for duplicates.."<<std::endl;
-		for(int i=0;i<title_list.size();i++)
-		{
-            for(int j=0;j<title_list.size()-1;j++)
-            {
-                if(title_list[j]>title_list[j+1])
-                {
-                    temp=title_list[j];
-                    title_list[j]=title_list[j+1];
-                    title_list[j+1]=temp;
-                }
-            }
-        }
-        bool found=false;
-        for(int i=0;i<title_list.size()-1;i++)
+		//Test 1: Internal Checksum
+		std::cout<<"\nTest 1: Internal Checksum: ";
+        if(f.verify())
+            std::cout<<"Pass\n";
+        else
         {
-            if(title_list[i]==title_list[i+1])
-                std::cout<<"Duplicate Entry found"<<std::endl;
+            std::cout<<"Fail\n";
+            return 0;
         }
-        if(!found)
-            std::cout<<"No duplicates entries found"<<std::endl;
 
-        for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
-		{
-            if(it->getMimeType()=="text/html")
-            {
-                std::vector<std::string> s=get_links(it->getPage());
-                int ct=0;
-                for(int i=0;i<s.size();i++)
-                {
-                    bool result= verify_url(f,s[i]);
-                    parse_url(s[i]);
-                    if(!result)
-                    {
-                        ct++;
-                        std::cout<<std::endl<<"External URl: "<<s[i]<<std::endl;
-                        //getchar();
-                    }
-                }
-                s.clear();
-
-                std::cout<<std::endl<<it->getUrl()<<" : "<<s.size()<<" links found; "<<ct<<" are external";
-            }
-		}
-        std::cout<<std::endl;
 	}
 	catch (const std::exception& e)
 	{
