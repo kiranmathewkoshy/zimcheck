@@ -4,6 +4,8 @@ zimcheck
 Written by : Kiran Mathew Koshy
 (kiranmathewkoshy@gmail.com)
 
+Please note that this program is under heavy development and all releases may not be stable.
+
 A tool to check the quality of a ZIM file.
 
 https://bugzilla.wikimedia.org/show_bug.cgi?id=47407
