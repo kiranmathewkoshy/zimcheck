@@ -49,7 +49,7 @@ std::vector <std::string> get_links(std::string page)           //Returns a vect
     return links;
 }
 
-void parse_url(std::string url)            //Function to parse a url and to return the domain name.
+std::string parse_url(std::string url)            //Function to parse a url and to return the domain name.
 {
     std::vector<std::string> link;
     link.clear();
@@ -77,14 +77,20 @@ void parse_url(std::string url)            //Function to parse a url and to retu
         }
         pos++;
     }
-    for(int i=0;i<counter;i++)
-    {
-        std::cout<<std::endl<<i<<" . "<<link[i];
-    }
+    std::string op;
+    if(link.size()>2)
+        op=link[1];
     link.clear();
-    return ;
+    return op;
 }
-
+bool is_wikipedia_url(std::string input)
+{
+    std::string op=parse_url(input);
+    if(op=="wikipedia")
+        return true;
+    else
+        return false;
+}
 bool verify_url(zim::File f,std::string url)        //Returns if a URL is present in a file.
 {
     for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
@@ -93,6 +99,17 @@ bool verify_url(zim::File f,std::string url)        //Returns if a URL is presen
             return true;
     }
     return false;
+}
+
+int checkData(zim::File f,std::string page)
+{
+    int count=0;
+    for(zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
+    {
+        if(page==it->getPage())
+            count++;
+    }
+    return count;
 }
 
 int main(int argc, char* argv[])
@@ -123,7 +140,7 @@ int main(int argc, char* argv[])
 
 
         //Test 2: Dead internal URLs
-        std::cout<<"\nTest 2: Dead Internal URLs\n";
+        std::cout<<"\nTest 2: Dead Internal URLs : NOT IMPLEMENTED YET\n";
         std::vector<std::string> output;
         for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
         {
@@ -136,6 +153,78 @@ int main(int argc, char* argv[])
                 }
             }
         }
+
+        //Test 3: External URLs:
+        std::cout<<"\nTest 3: External URLs : ";
+        output.clear();
+        bool pass=true;
+        for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
+        {
+            if(it->getMimeType()=="text/html")
+            {
+                output.clear();
+                output=get_links(it->getPage());
+                for(int i=0;i<output.size();i++)
+                {
+                     bool check=is_wikipedia_url(output[i]);
+                     if(!check)
+                        pass=false;
+                }
+            }
+        }
+        if(!pass)
+            std::cout<<"Fail. \n";
+        else
+            std::cout<<"Pass. \n";
+
+        //Test 4: Redundant data:
+        pass=true;
+        std::cout<<"\nTest 4: Redundant Data : ";
+        output.clear();
+        for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
+        {
+            std::string page=it->getPage();
+            int count=checkData(f,page);
+            if(count>1)
+            {
+                pass=false;
+            }
+        }
+        if(!pass)
+            std::cout<<"Fail. \n";
+        else
+            std::cout<<"Pass. \n";
+
+
+
+        //Test 5: NOT IMPLEMENTED YET.
+        std::cout<<"\nTest 5: NOT IMPLEMENTED YET : ";
+        std::cout<<"\n\n";
+
+
+
+        //Test 6: NOT IMPLEMENTED YET.
+        std::cout<<"\nTest 6: NOT IMPLEMENTED YET : ";
+        std::cout<<"\n\n";
+
+
+
+        //Test 7: NOT IMPLEMENTED YET.
+        std::cout<<"\nTest 7: NOT IMPLEMENTED YET : ";
+        std::cout<<"\n\n";
+
+
+
+        //Test 8: NOT IMPLEMENTED YET.
+        std::cout<<"\nTest 8: NOT IMPLEMENTED YET : ";
+        std::cout<<"\n\n";
+
+
+
+        //Test 9: NOT IMPLEMENTED YET.
+        std::cout<<"\nTest 9: NOT IMPLEMENTED YET : ";
+        std::cout<<"\n\n";
+
 
 	}
 	catch (const std::exception& e)
