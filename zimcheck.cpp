@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <vector>
 #include <list>
+#include <regex>
 std::vector <std::string> get_links(std::string page)           //Returns a vector of the links in a particular page. includes links under 'href' and 'src'
 {
     std::vector <std::string> links;
@@ -208,6 +209,31 @@ int adler32(std::string buf)
      return (s2 << 16) | s1;
 }
 
+bool is_external_url(std::string s)
+{
+    if(std::regex_match(s,std::regex("(http://)(.*)")))
+        return true;
+
+    if(std::regex_match(s,std::regex("(https://)(.*)")))
+        return true;
+}
+
+bool is_external_wikipedia_url(std::string s)
+{
+    if(std::regex_match(s,std::regex("(http://)(.*)")))
+        return true;
+
+    if(std::regex_match(s,std::regex("(https://)(.*)")))
+        return true;
+}
+
+bool is_internal_url(std::string s)
+{
+    if(std::regex_match(s,std::regex("(/)(.)(/)(.*)")))
+        return true;
+    else
+        return false;
+}
 
 int main(int argc, char* argv[])
 {
@@ -290,7 +316,7 @@ int main(int argc, char* argv[])
             std::cout<<"Fail\n";
         }
 
-/*
+
         //Test 4: Main Page Entry
         test_=true;
         std::cout<<"\nTest 4: Main Page Entry: ";
@@ -308,8 +334,8 @@ int main(int argc, char* argv[])
         {
             std::cout<<"Fail\n";
         }
-  */
-        std::cout<<std::flush;
+
+/*
         std::cout<<"\nTest 5: Redundant data: "<<std::flush;
 
         test_=false;
@@ -406,10 +432,33 @@ int main(int argc, char* argv[])
         {
             std::cout<<"Fail\n";
         }
+*/
 
 
 
         //Test 6: Checking Internal URLs
+
+        std::cout<<"\nVerifying Internal URLs.. \n"<<std::flush;
+        progress.initialise('#',c);
+        test_=true;
+        for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
+        {
+            std::vector<std::string> links=get_links(it->getPage());
+            for(int i=0;i<links.size();i++)
+            {
+                if(!is_internal_url(links[i]))
+                    test_=false;
+            }
+            progress.report();
+        }
+        if(test_)
+            std::cout<<"Pass\n";
+        else
+        {
+            std::cout<<"Fail\n";
+        }
+
+
         //Test 5: Check for Absolute Internal URLs
         /*
         test_=true;
