@@ -335,7 +335,6 @@ int main(int argc, char* argv[])
             std::cout<<"Fail\n";
         }
 
-/*
         std::cout<<"\nTest 5: Redundant data: "<<std::flush;
 
         test_=false;
@@ -432,7 +431,6 @@ int main(int argc, char* argv[])
         {
             std::cout<<"Fail\n";
         }
-*/
 
 
 
