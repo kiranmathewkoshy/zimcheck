@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2012 Kiran mathew Koshy
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * is provided AS IS, WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, and
+ * NON-INFRINGEMENT.  See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+ *
+ */
 #include <zim/file.h>
 #include <zim/fileiterator.h>
 #include <iostream>
@@ -436,7 +454,7 @@ int main(int argc, char* argv[])
 
         //Test 6: Checking Internal URLs
 
-        std::cout<<"\nVerifying Internal URLs.. \n"<<std::flush;
+        std::cout<<"\nTest 6: Verifying Internal URLs.. \n"<<std::flush;
         progress.initialise('#',c);
         test_=true;
         for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
@@ -450,10 +468,10 @@ int main(int argc, char* argv[])
             progress.report();
         }
         if(test_)
-            std::cout<<"Pass\n";
+            std::cout<<"\nPass\n";
         else
         {
-            std::cout<<"Fail\n";
+            std::cout<<"\nFail\n";
         }
 
 
