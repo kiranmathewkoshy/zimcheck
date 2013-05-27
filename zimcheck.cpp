@@ -378,7 +378,6 @@ int main(int argc, char* argv[])
         //Adding data to hash Tree.
         std::cout<<"\nAdding Data to Hash Tables from file...\n"<<std::flush;
         int i=0;
-        char arr[100000];
         std::string ar;
         zim::Blob bl;
         progress.initialise('#',c);
