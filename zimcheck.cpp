@@ -378,11 +378,20 @@ int main(int argc, char* argv[])
         //Adding data to hash Tree.
         std::cout<<"\nAdding Data to Hash Tables from file...\n"<<std::flush;
         int i=0;
+        char arr[100000];
         std::string ar;
+        zim::Blob bl;
         progress.initialise('#',c);
+        int sz=0;
         for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
         {
-            ar=it->getPage();
+            bl=it->getData();
+            sz=bl.size();
+            ar.clear();
+            if(sz>100000)
+                std::cout<<"\n"<<sz<<std::flush;
+            for(int i=0;i<sz;i++)
+                ar+=bl.data()[i];
             article.hash_ = adler32(ar);
             article.index=i;
             hash_main[ar.size()].push_back(article);
