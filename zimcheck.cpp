@@ -258,6 +258,7 @@ int main(int argc, char* argv[])
 {
 
     //Processing Flags passed to the program.
+
     zim::Arg<bool> run_all(argc, argv, 'A');
     zim::Arg<bool> checksum(argc, argv, 'C');
     zim::Arg<bool> metadata(argc, argv, 'M');
@@ -268,7 +269,13 @@ int main(int argc, char* argv[])
     zim::Arg<bool> mime_check(argc, argv, 'E');
     progress_bar progress('#',10);
     std::cout<<"\n"<<argv[argc-1]<<std::flush;
-    if (argc <= 1)
+    bool help=false;
+    for(int i=0; i<argc; i++)
+    {
+        if(strcmp(argv[i],"--help"))
+            help=true;
+    }
+    if (argc <= 1||help)
     {
         std::cerr << "usage: " << argv[0] << " [options] zimfile\n"
                   "\n"
