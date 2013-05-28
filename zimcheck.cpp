@@ -23,6 +23,7 @@
 #include <vector>
 #include <stdio.h>
 #include <vector>
+#include "arg.h"
 #include <list>
 #include <regex>
 std::vector <std::string> get_links(std::string page)           //Returns a vector of the links in a particular page. includes links under 'href' and 'src'
@@ -255,14 +256,34 @@ bool is_internal_url(std::string s)
 
 int main(int argc, char* argv[])
 {
+
+    //Processing Flags passed to the program.
+    zim::Arg<bool> fileinfo(argc, argv, 'F');
     progress_bar progress('#',10);
     if (argc <= 1)
     {
-        std::cerr << " Error opening File.\n";
-        std::cerr << " Help: Zimcheck\n";
-        std::cerr << " A tool to check the quality of a ZIM file.\n";
-        std::cerr << " Written by : Kiran Mathew Koshy\n";
-        return 0;
+        std::cerr << "usage: " << argv[0] << " [options] zimfile\n"
+                   "\n"
+                   "options:\n"
+                   "  -A        run all tests. Default if no flags are given.\n"
+                   "  -C        Internal CheckSum Test\n"
+                   "  -M        MetaData Entries\n"
+                   "  -F        Favicon\n"
+                   "  -MP       Main page\n"
+                   "  -R        Redundant data check\n"
+                   "  -U        URL checks\n"
+                   "  -MI       MIME checks\n"
+                   "\n"
+                   "examples:\n"
+                   "  " << argv[0] << " -A wikipedia.zim\n"
+                   "  " << argv[0] << " -C wikipedia.zim\n"
+                   "  " << argv[0] << " -F -R wikipedia.zim\n"
+                   "  " << argv[0] << " -MI wikipedia.zim\n"
+                   "  " << argv[0] << " -U wikipedia.zim\n"
+                   "  " << argv[0] << " -R -U wikipedia.zim\n"
+                   "  " << argv[0] << " -R -U -MI wikipedia.zim\n"
+                 << std::flush;
+        return -1;
     }
     try
     {
@@ -486,7 +507,17 @@ int main(int argc, char* argv[])
             std::cout<<"\nFail\n";
         }
 
+        //Test 6: Verifying MIME Types
+        /*
+        std::cout<<"\nTest 7: Verifying MIME Types.. \n"<<std::flush;
+        progress.initialise('#',c);
+        test_=true;
+        for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
+        {
 
+        }
+        */
+        std::cout<<"\n"<<f.getFileheader().getMimeListPos()<<"check"<<std::flush;
         //Test 5: Check for Absolute Internal URLs
         /*
         test_=true;
