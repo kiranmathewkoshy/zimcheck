@@ -137,7 +137,7 @@ public:
 
 class progress_bar
 {
-    private:
+private:
     char icon;
     int max_icons;
     int max_no;
@@ -145,7 +145,7 @@ class progress_bar
     int counter;
     int is_initialised;
     double displayed,count_max;
-    public:
+public:
     progress_bar(char icon_,int max_n)
     {
         if(max_n<1)
@@ -210,22 +210,22 @@ class progress_bar
 
 class int_pair
 {
-    public:
+public:
     int a;
     int b;
 };
 //Adler32 Hash Function
 int adler32(std::string buf)
 {
-     unsigned int s1 = 1;
-     unsigned int s2 = 0;
+    unsigned int s1 = 1;
+    unsigned int s2 = 0;
 
-     for (size_t n = 0; n <buf.size(); n++)
-     {
+    for (size_t n = 0; n <buf.size(); n++)
+    {
         s1 = (s1 + buf[n]) % 65521;
         s2 = (s2 + s1) % 65521;
-     }
-     return (s2 << 16) | s1;
+    }
+    return (s2 << 16) | s1;
 }
 
 bool is_external_url(std::string s)
@@ -271,26 +271,26 @@ int main(int argc, char* argv[])
     if (argc <= 1)
     {
         std::cerr << "usage: " << argv[0] << " [options] zimfile\n"
-                   "\n"
-                   "options:\n"
-                   "  -A        run all tests. Default if no flags are given.\n"
-                   "  -C        Internal CheckSum Test\n"
-                   "  -M        MetaData Entries\n"
-                   "  -F        Favicon\n"
-                   "  -P       Main page\n"
-                   "  -R        Redundant data check\n"
-                   "  -U        URL checks\n"
-                   "  -E       MIME checks\n"
-                   "\n"
-                   "examples:\n"
-                   "  " << argv[0] << " -A wikipedia.zim\n"
-                   "  " << argv[0] << " -C wikipedia.zim\n"
-                   "  " << argv[0] << " -F -R wikipedia.zim\n"
-                   "  " << argv[0] << " -MI wikipedia.zim\n"
-                   "  " << argv[0] << " -U wikipedia.zim\n"
-                   "  " << argv[0] << " -R -U wikipedia.zim\n"
-                   "  " << argv[0] << " -R -U -MI wikipedia.zim\n"
-                 << std::flush;
+                  "\n"
+                  "options:\n"
+                  "  -A        run all tests. Default if no flags are given.\n"
+                  "  -C        Internal CheckSum Test\n"
+                  "  -M        MetaData Entries\n"
+                  "  -F        Favicon\n"
+                  "  -P       Main page\n"
+                  "  -R        Redundant data check\n"
+                  "  -U        URL checks\n"
+                  "  -E       MIME checks\n"
+                  "\n"
+                  "examples:\n"
+                  "  " << argv[0] << " -A wikipedia.zim\n"
+                  "  " << argv[0] << " -C wikipedia.zim\n"
+                  "  " << argv[0] << " -F -R wikipedia.zim\n"
+                  "  " << argv[0] << " -MI wikipedia.zim\n"
+                  "  " << argv[0] << " -U wikipedia.zim\n"
+                  "  " << argv[0] << " -R -U wikipedia.zim\n"
+                  "  " << argv[0] << " -R -U -MI wikipedia.zim\n"
+                  << std::flush;
         return -1;
     }
     try
@@ -315,217 +315,235 @@ int main(int argc, char* argv[])
         }
 
 
-        //Test 2: Dead internal URLs
-        std::cout<<"\nTest  2: Metadata Entries: ";
-        bool test_meta[6];
-        for(int i=0; i<6; i++)
-            test_meta[i]=false;
-        for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
+        //Test 2: Metadata Entries:
+        if(run_all||metadata)
         {
-            if(it->getNamespace()=='M')
+            std::cout<<"\nTest  2: Metadata Entries: ";
+            bool test_meta[6];
+            for(int i=0; i<6; i++)
+                test_meta[i]=false;
+            for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
             {
-                if(it->getTitle()=="Title")
-                    test_meta[0]=true;
-                if(it->getTitle()=="Creator")
-                    test_meta[1]=true;
-                if(it->getTitle()=="Publisher")
-                    test_meta[2]=true;
-                if(it->getTitle()=="Date")
-                    test_meta[3]=true;
-                if(it->getTitle()=="Description")
-                    test_meta[4]=true;
-                if(it->getTitle()=="Language")
-                    test_meta[5]=true;
+                if(it->getNamespace()=='M')
+                {
+                    if(it->getTitle()=="Title")
+                        test_meta[0]=true;
+                    if(it->getTitle()=="Creator")
+                        test_meta[1]=true;
+                    if(it->getTitle()=="Publisher")
+                        test_meta[2]=true;
+                    if(it->getTitle()=="Date")
+                        test_meta[3]=true;
+                    if(it->getTitle()=="Description")
+                        test_meta[4]=true;
+                    if(it->getTitle()=="Language")
+                        test_meta[5]=true;
+                }
             }
-        }
-        test_=true;
-        for(int i=0; i<6; i++)
-            if(!test_meta[i])
-                test_=false;
-        if(test_)
-            std::cout<<"Pass\n";
-        else
-        {
-            std::cout<<"Fail\n";
+            test_=true;
+            for(int i=0; i<6; i++)
+                if(!test_meta[i])
+                    test_=false;
+            if(test_)
+                std::cout<<"Pass\n";
+            else
+            {
+                std::cout<<"Fail\n";
+            }
         }
 
 
         //Test 3: Test for Favicon.
-        std::cout<<"\nTest 3: Test for Favicon: ";
-        test_=false;
-        for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
+        if(run_all||favicon)
         {
-            if(it->getNamespace()=='-')
-                if(it->getTitle()=="favicon.png")
-                    test_=true;
-        }
-        if(test_)
-        {
-            std::cout<<"Pass\n";
-        }
-        else
-        {
-            std::cout<<"Fail\n";
+            std::cout<<"\nTest 3: Test for Favicon: ";
+            test_=false;
+            for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
+            {
+                if(it->getNamespace()=='-')
+                    if(it->getTitle()=="favicon.png")
+                        test_=true;
+            }
+            if(test_)
+            {
+                std::cout<<"Pass\n";
+            }
+            else
+            {
+                std::cout<<"Fail\n";
+            }
         }
 
 
         //Test 4: Main Page Entry
-        test_=true;
-        std::cout<<"\nTest 4: Main Page Entry: ";
-        zim::Fileheader fh=f.getFileheader();
-        if(!fh.hasMainPage())
-            test_=false;
-        else
+        if(run_all||main_page)
         {
-            if(fh.getMainPage()>fh.getArticleCount())
+            test_=true;
+            std::cout<<"\nTest 4: Main Page Entry: ";
+            zim::Fileheader fh=f.getFileheader();
+            if(!fh.hasMainPage())
                 test_=false;
-        }
-        if(test_)
-            std::cout<<"Pass\n";
-        else
-        {
-            std::cout<<"Fail\n";
-        }
-
-        std::cout<<"\nTest 5: Redundant data: "<<std::flush;
-
-        test_=false;
-        int max=0;
-        int k;
-        std::cout<<"\nCreating Data Structures...\n"<<std::flush;
-        for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
-        {
-            k=it->getArticleSize();
-            if(k>max)
-                max=k;
-            progress.report();
-        }
-        //Data Storage system
-        std::vector<std::list<article_index> >hash_main;
-
-        //Allocating Double Hash Tree.
-        hash_main.resize(max+1);
-
-        //List of Articles to be compared against
-        article_index article;
-
-        //Adding data to hash Tree.
-        std::cout<<"\nAdding Data to Hash Tables from file...\n"<<std::flush;
-        int i=0;
-        char arr[100000];
-        std::string ar;
-        zim::Blob bl;
-        progress.initialise('#',c);
-        int sz=0;
-        for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
-        {
-            bl=it->getData();
-            sz=bl.size();
-            ar.clear();
-            for(int i=0;i<sz;i++)
-                ar+=bl.data()[i];
-            article.hash_ = adler32(ar);
-            article.index=i;
-            hash_main[ar.size()].push_back(article);
-            i++;
-            progress.report();
-        }
-        //Checking through hash tree for redundancies.
-        //Sorting the hash tree.
-        std::cout<<"\nSorting Hash Tree...\n"<<std::flush;
-        int hash_main_size=hash_main.size();
-        progress.initialise('#',c);
-        for(int i=0;i<hash_main_size;i++)
-        {
-            hash_main[i].sort();
-            progress.report();
-        }
-        std::vector<int_pair> to_verify;
-        //Processing the tree
-        std::cout<<"\nSearching for redundant Data...\n"<<std::flush;
-        progress.initialise('#',c);
-        for(int i=0;i<hash_main_size;i++)
-        {
-            std::list<article_index>::iterator it=hash_main[i].begin();
-            article_index prev;
-            prev.index=it->index;
-            prev.hash_=it->hash_;
-            ++it;
-            for (; it != hash_main[i].end(); ++it)
+            else
             {
-                if(it->hash_==prev.hash_)
-                {
-                    int_pair p;
-                    p.a=it->index;
-                    p.b=prev.index;
-                    to_verify.push_back(p);
-                }
+                if(fh.getMainPage()>fh.getArticleCount())
+                    test_=false;
+            }
+            if(test_)
+                std::cout<<"Pass\n";
+            else
+            {
+                std::cout<<"Fail\n";
+            }
+        }
+
+
+        //Test 5: Redundant Data:
+        if(run_all||redundant_data)
+        {
+            std::cout<<"\nTest 5: Redundant data: "<<std::flush;
+
+            test_=false;
+            int max=0;
+            int k;
+            std::cout<<"\nCreating Data Structures...\n"<<std::flush;
+            for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
+            {
+                k=it->getArticleSize();
+                if(k>max)
+                    max=k;
+                progress.report();
+            }
+            //Data Storage system
+            std::vector<std::list<article_index> >hash_main;
+
+            //Allocating Double Hash Tree.
+            hash_main.resize(max+1);
+
+            //List of Articles to be compared against
+            article_index article;
+
+            //Adding data to hash Tree.
+            std::cout<<"\nAdding Data to Hash Tables from file...\n"<<std::flush;
+            int i=0;
+            char arr[100000];
+            std::string ar;
+            zim::Blob bl;
+            progress.initialise('#',c);
+            int sz=0;
+            for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
+            {
+                bl=it->getData();
+                sz=bl.size();
+                ar.clear();
+                for(int i=0; i<sz; i++)
+                    ar+=bl.data()[i];
+                article.hash_ = adler32(ar);
+                article.index=i;
+                hash_main[ar.size()].push_back(article);
+                i++;
+                progress.report();
+            }
+            //Checking through hash tree for redundancies.
+            //Sorting the hash tree.
+            std::cout<<"\nSorting Hash Tree...\n"<<std::flush;
+            int hash_main_size=hash_main.size();
+            progress.initialise('#',c);
+            for(int i=0; i<hash_main_size; i++)
+            {
+                hash_main[i].sort();
+                progress.report();
+            }
+            std::vector<int_pair> to_verify;
+            //Processing the tree
+            std::cout<<"\nSearching for redundant Data...\n"<<std::flush;
+            progress.initialise('#',c);
+            for(int i=0; i<hash_main_size; i++)
+            {
+                std::list<article_index>::iterator it=hash_main[i].begin();
+                article_index prev;
                 prev.index=it->index;
                 prev.hash_=it->hash_;
+                ++it;
+                for (; it != hash_main[i].end(); ++it)
+                {
+                    if(it->hash_==prev.hash_)
+                    {
+                        int_pair p;
+                        p.a=it->index;
+                        p.b=prev.index;
+                        to_verify.push_back(p);
+                    }
+                    prev.index=it->index;
+                    prev.hash_=it->hash_;
+                }
+                progress.report();
             }
-            progress.report();
+            test_=true;
+            std::cout<<"\nVerifying Similar Articles for redundancies.. \n"<<std::flush;
+            progress.initialise('#',c);
+            for(int i=0; i<to_verify.size(); i++)
+            {
+                bool op=false;
+                zim::File::const_iterator it = f.begin();
+                std::string s1,s2;
+                for(int k=0; k<to_verify[i].a; k++)
+                    ++it;
+                s1=it->getPage();
+                it = f.begin();
+                for(int k=0; k<to_verify[i].b; k++)
+                    ++it;
+                s2=it->getPage();
+                if(s1==s2)
+                    test_=false;
+                progress.report();
+            }
+            if(test_)
+                std::cout<<"Pass\n";
+            else
+            {
+                std::cout<<"Fail\n";
+            }
         }
-        test_=true;
-        std::cout<<"\nVerifying Similar Articles for redundancies.. \n"<<std::flush;
-        progress.initialise('#',c);
-        for(int i=0;i<to_verify.size();i++)
-        {
-            bool op=false;
-            zim::File::const_iterator it = f.begin();
-            std::string s1,s2;
-            for(int k=0;k<to_verify[i].a;k++)
-            ++it;
-            s1=it->getPage();
-            it = f.begin();
-            for(int k=0;k<to_verify[i].b;k++)
-            ++it;
-            s2=it->getPage();
-            if(s1==s2)
-                test_=false;
-            progress.report();
-        }
-        if(test_)
-            std::cout<<"Pass\n";
-        else
-        {
-            std::cout<<"Fail\n";
-        }
-
 
 
         //Test 6: Checking Internal URLs
-
-        std::cout<<"\nTest 6: Verifying Internal URLs.. \n"<<std::flush;
-        progress.initialise('#',c);
-        test_=true;
-        for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
+        if(run_all||url_check)
         {
-            if(it->getMimeType()=="text/html")
+            std::cout<<"\nTest 6: Verifying Internal URLs.. \n"<<std::flush;
+            progress.initialise('#',c);
+            test_=true;
+            for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
             {
-                std::vector<std::string> links=get_links(it->getPage());
-                for(int i=0;i<links.size();i++)
+                if(it->getMimeType()=="text/html")
                 {
-                    if(!is_internal_url(links[i]))
-                        test_=false;
+                    std::vector<std::string> links=get_links(it->getPage());
+                    for(int i=0; i<links.size(); i++)
+                    {
+                        if(!is_internal_url(links[i]))
+                            test_=false;
+                    }
                 }
+                progress.report();
             }
-            progress.report();
-        }
-        if(test_)
-            std::cout<<"\nPass\n";
-        else
-        {
-            std::cout<<"\nFail\n";
+            if(test_)
+                std::cout<<"\nPass\n";
+            else
+            {
+                std::cout<<"\nFail\n";
+            }
         }
 
         //Test 6: Verifying MIME Types
         /*
+        if(run_all||mime_check)
+        {
         std::cout<<"\nTest 7: Verifying MIME Types.. \n"<<std::flush;
         progress.initialise('#',c);
         test_=true;
         for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
         {
 
+        }
         }
         */
         std::cout<<"\n"<<f.getFileheader().getMimeListPos()<<"check"<<std::flush;
