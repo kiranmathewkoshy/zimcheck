@@ -258,8 +258,16 @@ int main(int argc, char* argv[])
 {
 
     //Processing Flags passed to the program.
-    zim::Arg<bool> fileinfo(argc, argv, 'F');
+    zim::Arg<bool> run_all(argc, argv, 'A');
+    zim::Arg<bool> checksum(argc, argv, 'C');
+    zim::Arg<bool> metadata(argc, argv, 'M');
+    zim::Arg<bool> favicon(argc, argv, 'F');
+    zim::Arg<bool> main_page(argc, argv, 'P');
+    zim::Arg<bool> redundant_data(argc, argv, 'R');
+    zim::Arg<bool> url_check(argc, argv, 'U');
+    zim::Arg<bool> mime_check(argc, argv, 'E');
     progress_bar progress('#',10);
+    std::cout<<"\n"<<argv[argc-1]<<std::flush;
     if (argc <= 1)
     {
         std::cerr << "usage: " << argv[0] << " [options] zimfile\n"
@@ -269,10 +277,10 @@ int main(int argc, char* argv[])
                    "  -C        Internal CheckSum Test\n"
                    "  -M        MetaData Entries\n"
                    "  -F        Favicon\n"
-                   "  -MP       Main page\n"
+                   "  -P       Main page\n"
                    "  -R        Redundant data check\n"
                    "  -U        URL checks\n"
-                   "  -MI       MIME checks\n"
+                   "  -E       MIME checks\n"
                    "\n"
                    "examples:\n"
                    "  " << argv[0] << " -A wikipedia.zim\n"
@@ -288,19 +296,22 @@ int main(int argc, char* argv[])
     try
     {
         bool test_=false;
-        zim::File f(argv[1]);
+        zim::File f(argv[argc-1]);
         std::cout<<"\nRunning Tests...";
         int c=0;
         for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
             c++;
         progress.initialise('#',c);
         //Test 1: Internal Checksum
-        std::cout<<"\nTest 1: Internal Checksum: ";
-        if(f.verify())
-            std::cout<<"Pass\n";
-        else
+        if(run_all||checksum)
         {
-            std::cout<<"Fail\n";
+            std::cout<<"\nTest 1: Internal Checksum: ";
+            if(f.verify())
+                std::cout<<"Pass\n";
+            else
+            {
+                std::cout<<"Fail\n";
+            }
         }
 
 
