@@ -476,8 +476,8 @@ int main(int argc, char* argv[])
                     if(!is_internal_url(links[i]))
                         test_=false;
                 }
-                progress.report();
             }
+            progress.report();
         }
         if(test_)
             std::cout<<"\nPass\n";
