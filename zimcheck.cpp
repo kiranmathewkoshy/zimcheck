@@ -328,7 +328,9 @@ int main(int argc, char* argv[])
                     test_=true;
         }
         if(test_)
+        {
             std::cout<<"Pass\n";
+        }
         else
         {
             std::cout<<"Fail\n";
@@ -378,6 +380,7 @@ int main(int argc, char* argv[])
         //Adding data to hash Tree.
         std::cout<<"\nAdding Data to Hash Tables from file...\n"<<std::flush;
         int i=0;
+        char arr[100000];
         std::string ar;
         zim::Blob bl;
         progress.initialise('#',c);
@@ -387,8 +390,6 @@ int main(int argc, char* argv[])
             bl=it->getData();
             sz=bl.size();
             ar.clear();
-            if(sz>100000)
-                std::cout<<"\n"<<sz<<std::flush;
             for(int i=0;i<sz;i++)
                 ar+=bl.data()[i];
             article.hash_ = adler32(ar);
@@ -467,13 +468,16 @@ int main(int argc, char* argv[])
         test_=true;
         for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
         {
-            std::vector<std::string> links=get_links(it->getPage());
-            for(int i=0;i<links.size();i++)
+            if(it->getMimeType()=="text/html")
             {
-                if(!is_internal_url(links[i]))
-                    test_=false;
+                std::vector<std::string> links=get_links(it->getPage());
+                for(int i=0;i<links.size();i++)
+                {
+                    if(!is_internal_url(links[i]))
+                        test_=false;
+                }
+                progress.report();
             }
-            progress.report();
         }
         if(test_)
             std::cout<<"\nPass\n";
