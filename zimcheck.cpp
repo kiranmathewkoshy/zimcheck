@@ -26,6 +26,7 @@
 #include "arg.h"
 #include <list>
 #include <regex>
+#include <cstring>
 std::vector <std::string> get_links(std::string page)           //Returns a vector of the links in a particular page. includes links under 'href' and 'src'
 {
     std::vector <std::string> links;
@@ -254,6 +255,16 @@ bool is_internal_url(std::string s)
         return false;
 }
 
+std::string get_real_title_internal(std::string s)
+{
+    std::string ret;
+    for(int i=3;i<s.size();i++)
+    {
+        ret+=s[i];
+    }
+    return ret;
+}
+
 int main(int argc, char* argv[])
 {
 
@@ -272,10 +283,13 @@ int main(int argc, char* argv[])
     bool help=false;
     for(int i=0; i<argc; i++)
     {
-        if(strcmp(argv[i],"--help"))
+        if(strcmp(argv[i],"--help")==0)
             help=true;
     }
-    if (argc <= 1||help)
+    bool no_args=false;
+    if((run_all||checksum||metadata||favicon||main_page||redundant_data||url_check||mime_check)==false)
+        no_args=true;
+    if (argc < 1||help)
     {
         std::cerr << "usage: " << argv[0] << " [options] zimfile\n"
                   "\n"
@@ -310,7 +324,7 @@ int main(int argc, char* argv[])
             c++;
         progress.initialise('#',c);
         //Test 1: Internal Checksum
-        if(run_all||checksum)
+        if(run_all||checksum||no_args)
         {
             std::cout<<"\nTest 1: Internal Checksum: ";
             if(f.verify())
@@ -323,7 +337,7 @@ int main(int argc, char* argv[])
 
 
         //Test 2: Metadata Entries:
-        if(run_all||metadata)
+        if(run_all||metadata||no_args)
         {
             std::cout<<"\nTest  2: Metadata Entries: ";
             bool test_meta[6];
@@ -361,7 +375,7 @@ int main(int argc, char* argv[])
 
 
         //Test 3: Test for Favicon.
-        if(run_all||favicon)
+        if(run_all||favicon||no_args)
         {
             std::cout<<"\nTest 3: Test for Favicon: ";
             test_=false;
@@ -383,7 +397,7 @@ int main(int argc, char* argv[])
 
 
         //Test 4: Main Page Entry
-        if(run_all||main_page)
+        if(run_all||main_page||no_args)
         {
             test_=true;
             std::cout<<"\nTest 4: Main Page Entry: ";
@@ -405,7 +419,7 @@ int main(int argc, char* argv[])
 
 
         //Test 5: Redundant Data:
-        if(run_all||redundant_data)
+        if(run_all||redundant_data||no_args)
         {
             std::cout<<"\nTest 5: Redundant data: "<<std::flush;
 
@@ -513,21 +527,47 @@ int main(int argc, char* argv[])
         }
 
 
-        //Test 6: Checking Internal URLs
-        if(run_all||url_check)
+        //Test 6: Verifying Internal URLs
+        if(run_all||url_check||no_args)
         {
-            std::cout<<"\nTest 6: Verifying Internal URLs.. \n"<<std::flush;
+            std::cout<<"\nTest 6: Verifying Internal URLs: \n"<<std::flush;
+            std::vector< std::vector< std::string> >titles;
+            titles.resize(256);
+            for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
+            {
+                titles[(int)it->getNamespace()].push_back(it->getTitle());
+            }
+            //Implement sorting in order to reduce search time.
+            /*
+            for(int i=0;i<256;i++)
+            {
+                titles[i].sort();
+            }
+
+            */
             progress.initialise('#',c);
             test_=true;
             for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
             {
                 if(it->getMimeType()=="text/html")
                 {
+
                     std::vector<std::string> links=get_links(it->getPage());
                     for(int i=0; i<links.size(); i++)
                     {
-                        if(!is_internal_url(links[i]))
-                            test_=false;
+                        if(is_internal_url(links[i]))
+                        {
+                            std::string real_string=get_real_title_internal(links[i]);
+                            bool found=false;
+                            int nm=(int)links[i][1];
+                            for(int j=0;j<titles[nm].size();j++)
+                            {
+                                if(real_string==titles[nm][j])
+                                    found=true;
+                            }
+                            if(!found)
+                                test_=false;
+                        }
                     }
                 }
                 progress.report();
@@ -541,34 +581,27 @@ int main(int argc, char* argv[])
         }
 
         //Test 6: Verifying MIME Types
-        /*
-        if(run_all||mime_check)
-        {
-        std::cout<<"\nTest 7: Verifying MIME Types.. \n"<<std::flush;
-        progress.initialise('#',c);
-        test_=true;
-        for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
-        {
 
-        }
-        }
-        */
-        std::cout<<"\n"<<f.getFileheader().getMimeListPos()<<"check"<<std::flush;
-        //Test 5: Check for Absolute Internal URLs
-        /*
-        test_=true;
-        std::cout<<"\nTest 5: Absolute internal URLs:";
-        for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
+        if(run_all||mime_check||no_args)
         {
-            std::vector<std::string> data;
-            data=get_links(it->getPage());
-            for(int i=0;i<data.size();i++)
-                std::cout<<"\n"<<data[i];
+            std::cout<<f.getFileheader().getMimeListPos()<<"\n"<<std::flush;
+            std::cout<<"\nTest 7: Verifying MIME Types.. \n"<<std::flush;
+            progress.initialise('#',c);
+            test_=true;
+            for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
+            {
+                ;
+                progress.report();
+            }
+            if(test_)
+                std::cout<<"\nPass\n";
+            else
+            {
+                std::cout<<"\nFail\n";
+            }
         }
-        std::cout<<"\n";
 
 
-        */
 
     }
     catch (const std::exception& e)
