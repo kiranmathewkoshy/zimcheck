@@ -25,6 +25,7 @@
 #include <vector>
 #include "arg.h"
 #include <list>
+#include <algorithm>
 #include <regex>
 #include <cstring>
 std::vector <std::string> get_links(std::string page)           //Returns a vector of the links in a particular page. includes links under 'href' and 'src'
@@ -134,6 +135,22 @@ public:
 
     }
 
+};
+
+class article_title_url
+{
+public:
+    std::string title;
+    std::string url;
+    bool operator<(const article_title_url a)
+    {
+        return title<a.title?true:false;
+    }
+
+    bool operator== (const article_title_url a)
+    {
+        return title==a.title?true:false;
+    }
 };
 
 class progress_bar
@@ -255,15 +272,11 @@ bool is_internal_url(std::string s)
         return false;
 }
 
-std::string get_real_title_internal(std::string s)
+bool compare_article_titles(article_title_url a, article_title_url b)
 {
-    std::string ret;
-    for(int i=3;i<s.size();i++)
-    {
-        ret+=s[i];
-    }
-    return ret;
+    return a.title<b.title?true:false;
 }
+
 
 int main(int argc, char* argv[])
 {
@@ -526,45 +539,39 @@ int main(int argc, char* argv[])
             }
         }
 
-
         //Test 6: Verifying Internal URLs
         if(run_all||url_check||no_args)
         {
-            std::cout<<"\nTest 6: Verifying Internal URLs: \n"<<std::flush;
-            std::vector< std::vector< std::string> >titles;
+            std::cout<<"\nTest 6: Verifying Internal URLs 2: \n"<<std::flush;
+            std::vector < std::vector<article_title_url> >titles;
             titles.resize(256);
+            article_title_url ar;
             for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
             {
-                titles[(int)it->getNamespace()].push_back(it->getTitle());
+                ar.title=it->getTitle();
+                ar.url=it->getUrl();
+                titles[(int)it->getNamespace()].push_back(ar);
             }
-            //Implement sorting in order to reduce search time.
-            /*
-            for(int i=0;i<256;i++)
+            for(int i=0; i<256; i++)
             {
-                titles[i].sort();
+                std::sort(titles[i].begin(),titles[i].end(),compare_article_titles);
             }
-
-            */
             progress.initialise('#',c);
             test_=true;
             for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
             {
                 if(it->getMimeType()=="text/html")
                 {
-
                     std::vector<std::string> links=get_links(it->getPage());
                     for(int i=0; i<links.size(); i++)
                     {
                         if(is_internal_url(links[i]))
                         {
-                            std::string real_string=get_real_title_internal(links[i]);
+                            ar.title=links[i].substr(1,std::string::npos);
                             bool found=false;
                             int nm=(int)links[i][1];
-                            for(int j=0;j<titles[nm].size();j++)
-                            {
-                                if(real_string==titles[nm][j])
-                                    found=true;
-                            }
+                            if(std::binary_search(titles[nm].begin(),titles[nm].end(),ar,compare_article_titles))
+                                found=true;
                             if(!found)
                                 test_=false;
                         }
@@ -579,12 +586,10 @@ int main(int argc, char* argv[])
                 std::cout<<"\nFail\n";
             }
         }
-
         //Test 6: Verifying MIME Types
 
         if(run_all||mime_check||no_args)
         {
-            std::cout<<f.getFileheader().getMimeListPos()<<"\n"<<std::flush;
             std::cout<<"\nTest 7: Verifying MIME Types.. \n"<<std::flush;
             progress.initialise('#',c);
             test_=true;
