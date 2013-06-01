@@ -20,7 +20,9 @@ Here's a list of the checks that  are done on a ZIM file:
 
 6 - Internal URL check: checks all interla URLs to make sure that they are valid URLs.
 
-7 - MIME type check: checks the validity of MIME type of all articles in the ZIM file.
+7 - Searching for External Dependencies: The ZIM file is searched for external dependencies.
+
+8 - MIME type check: checks the validity of MIME type of all articles in the ZIM file.
 
 Usage: 
 

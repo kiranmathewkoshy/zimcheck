@@ -246,22 +246,24 @@ int adler32(std::string buf)
     return (s2 << 16) | s1;
 }
 
-bool is_external_url(std::string s)
-{
-    if(std::regex_match(s,std::regex("(http://)(.*)")))
-        return true;
-
-    if(std::regex_match(s,std::regex("(https://)(.*)")))
-        return true;
-}
-
 bool is_external_wikipedia_url(std::string s)
 {
-    if(std::regex_match(s,std::regex("(http://)(.*)")))
+    if(std::regex_match(s,std::regex("(http://en.wikipedia.org/)(.*)")))
         return true;
 
-    if(std::regex_match(s,std::regex("(https://)(.*)")))
+    if(std::regex_match(s,std::regex("(https://en.wikipedia.org/)(.*)")))
         return true;
+
+    if(std::regex_match(s,std::regex("(en.wikipedia.org/)(.*)")))
+        return true;
+
+    if(std::regex_match(s,std::regex("(.*)(.wikipedia.org/)(.*)")))
+        return true;
+
+    if(std::regex_match(s,std::regex("(.*)(.wikimedia.org/)(.*)")))
+        return true;
+
+    return false;
 }
 
 bool is_internal_url(std::string s)
@@ -290,6 +292,7 @@ int main(int argc, char* argv[])
     zim::Arg<bool> main_page(argc, argv, 'P');
     zim::Arg<bool> redundant_data(argc, argv, 'R');
     zim::Arg<bool> url_check(argc, argv, 'U');
+    zim::Arg<bool> url_check_external(argc, argv, 'X');
     zim::Arg<bool> mime_check(argc, argv, 'E');
     progress_bar progress('#',10);
     std::cout<<"\n"<<argv[argc-1]<<std::flush;
@@ -311,10 +314,11 @@ int main(int argc, char* argv[])
                   "  -C        Internal CheckSum Test\n"
                   "  -M        MetaData Entries\n"
                   "  -F        Favicon\n"
-                  "  -P       Main page\n"
+                  "  -P        Main page\n"
                   "  -R        Redundant data check\n"
                   "  -U        URL checks\n"
-                  "  -E       MIME checks\n"
+                  "  -X        External Dependency check\n"
+                  "  -E        MIME checks\n"
                   "\n"
                   "examples:\n"
                   "  " << argv[0] << " -A wikipedia.zim\n"
@@ -542,7 +546,7 @@ int main(int argc, char* argv[])
         //Test 6: Verifying Internal URLs
         if(run_all||url_check||no_args)
         {
-            std::cout<<"\nTest 6: Verifying Internal URLs 2: \n"<<std::flush;
+            std::cout<<"\nTest 6: Verifying Internal URLs : \n"<<std::flush;
             std::vector < std::vector<article_title_url> >titles;
             titles.resize(256);
             article_title_url ar;
@@ -587,7 +591,41 @@ int main(int argc, char* argv[])
             }
         }
 
-        //Test 7: Verifying MIME Types
+
+        //Test 7: Checking for external Dependencies.
+        int found_count=0;
+        if(run_all||url_check_external||no_args)
+        {
+            std::cout<<"\nTest 6: Searching for External Dependencies: \n"<<std::flush;
+            progress.initialise('#',c);
+            test_=true;
+            for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
+            {
+                if(it->getMimeType()=="text/html")
+                {
+                    std::vector<std::string> links=get_links(it->getPage());
+                    for(int i=0; i<links.size(); i++)
+                    {
+                        if(!is_internal_url(links[i]))
+                        {
+                            if(!is_external_wikipedia_url(links[i]))
+                            {
+                                test_=false;
+                            }
+                        }
+                    }
+                }
+                progress.report();
+            }
+            if(test_)
+                std::cout<<"\nPass\n";
+            else
+            {
+                std::cout<<"\nFail\n";
+            }
+        }
+
+        //Test 8: Verifying MIME Types
 
         if(run_all||mime_check||no_args)
         {
