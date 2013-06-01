@@ -302,7 +302,7 @@ int main(int argc, char* argv[])
     bool no_args=false;
     if((run_all||checksum||metadata||favicon||main_page||redundant_data||url_check||mime_check)==false)
         no_args=true;
-    if (argc < 1||help)
+    if (argc <= 1||help)
     {
         std::cerr << "usage: " << argv[0] << " [options] zimfile\n"
                   "\n"
@@ -586,7 +586,8 @@ int main(int argc, char* argv[])
                 std::cout<<"\nFail\n";
             }
         }
-        //Test 6: Verifying MIME Types
+
+        //Test 7: Verifying MIME Types
 
         if(run_all||mime_check||no_args)
         {

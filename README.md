@@ -4,29 +4,44 @@ zimcheck
 Written by : Kiran Mathew Koshy
 (kiranmathewkoshy@gmail.com)
 
-Please note that this program is under heavy development and all versions may not be stable.
 
+This is a tool which can be used to check the quality of a ZIM file.
+Here's a list of the checks that  are done on a ZIM file:
 
 1 - Internal checksum: launch internal checksum verification
 
-2 - Dead internal urls: check all ZIM internal urls an verify if the target
-exists. That means css/javascript loading urls, images src and url href.... an
-probably a few others
+2 - Metadata Entries: checks if all metadata entries are present in the ZIM file.
 
-3 - Checks that urls in CSS files are not external, and internal urls are valid
+3 - Favicon: Checks if the favicon is present in the ZIM file.
 
-4 - Veryfy that there is not online dependencies (images, javascript/css
-loading, ....) in HTML code
+4 - Main Page entry: Checks wether the main page is present, and that it points to a valid article.
 
-5 - Check if the following metadata entries are there: title, creator,
-publisher, date, description language. Check if date and language are in the
-correct format.http://openzim.org/wiki/Metadata 
+5 - Redundant data check: Checks if there are any redundant articles.
 
-6 - Verify that the favicon is there 
+6 - Internal URL check: checks all interla URLs to make sure that they are valid URLs.
 
-7 - Verify the main page header entry is defined and point to a valid content.
+7 - MIME type check: checks the validity of MIME type of all articles in the ZIM file.
 
-8 - Check duplicate content: be sure that the same content is not available
-under two different url. For example two times the same picture.
+Usage: 
 
-9 - Verify that internal urls are not absolute
+./zimcheckusage: ./zimcheck [options] zimfile
+
+options:
+  -A        run all tests. Default if no flags are given.
+  -C        Internal CheckSum Test
+  -M        MetaData Entries
+  -F        Favicon
+  -P       Main page
+  -R        Redundant data check
+  -U        URL checks
+  -E       MIME checks
+
+examples:
+  ./zimcheck -A wikipedia.zim
+  ./zimcheck -C wikipedia.zim
+  ./zimcheck -F -R wikipedia.zim
+  ./zimcheck -MI wikipedia.zim
+  ./zimcheck -U wikipedia.zim
+  ./zimcheck -R -U wikipedia.zim
+  ./zimcheck -R -U -MI wikipedia.zim
+
