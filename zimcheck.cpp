@@ -294,6 +294,7 @@ int main(int argc, char* argv[])
     zim::Arg<bool> url_check(argc, argv, 'U');
     zim::Arg<bool> url_check_external(argc, argv, 'X');
     zim::Arg<bool> mime_check(argc, argv, 'E');
+    zim::Arg<bool> error_details(argc, argv, 'D');
     progress_bar progress('#',10);
     std::cout<<"\n"<<argv[argc-1]<<std::flush;
     bool help=false;
@@ -319,6 +320,7 @@ int main(int argc, char* argv[])
                   "  -U        URL checks\n"
                   "  -X        External Dependency check\n"
                   "  -E        MIME checks\n"
+                  "  -D        Lists Details of the errors in the ZIM file.\n"
                   "\n"
                   "examples:\n"
                   "  " << argv[0] << " -A wikipedia.zim\n"
@@ -349,6 +351,10 @@ int main(int argc, char* argv[])
             else
             {
                 std::cout<<"Fail\n";
+                if(error_details)
+                {
+                    std::cout<<"Details: \n";
+                }
             }
         }
 
