@@ -24,6 +24,10 @@ Here's a list of the checks that  are done on a ZIM file:
 
 8 - MIME type check: checks the validity of MIME type of all articles in the ZIM file.
 
+To list the details of the error reported, add a flag -D.
+
+For most errors, the details of the error will be quite lengthy, so it is reccomended that the user redirect the output to a file.
+
 Usage: 
 
 ./zimcheckusage: ./zimcheck [options] zimfile
@@ -33,11 +37,11 @@ options:
   -C        Internal CheckSum Test
   -M        MetaData Entries
   -F        Favicon
-  -P       Main page
+  -P        Main page
   -R        Redundant data check
   -U        URL checks
-  -E       MIME checks
-
+  -E        MIME checks
+  -D	    Details of error
 examples:
   ./zimcheck -A wikipedia.zim
   ./zimcheck -C wikipedia.zim
