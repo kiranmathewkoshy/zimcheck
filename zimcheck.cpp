@@ -191,14 +191,15 @@ public:
         if(is_initialised!=1)
             return;
         counter++;
-        displayed=(no+1)/80.00;
-        count_max=(counter*1.0)/max_no;
-        if(count_max>displayed)
+        float i=(counter*1.0)/max_no;
+        float disp=(no*1.0)/max_icons;
+        while((disp<i)&&no<max_icons)
         {
-            std::cout<<icon<<std::flush;
+            disp=(no*1.0)/max_icons;
             no++;
+            std::cout<<icon<<std::flush;
         }
-        if(no>=80)
+        if(no>=max_icons)
             is_initialised=-1;
         return;
     }
@@ -216,6 +217,33 @@ public:
         }
         is_initialised=1;
         max_icons=80;
+        icon=icon_;
+        max_no=max_n;
+        no=0;
+        counter=0;
+        count_max=0.0;
+        displayed=0.0;
+        return;
+    }
+    void initialise(char icon_,int max_n,int max_ic)
+    {
+        if(max_n<1)
+        {
+            is_initialised=-1;
+            return;
+        }
+        if(max_n<1)
+        {
+            is_initialised=-1;
+            return;
+        }
+        if(max_ic<1)
+        {
+            is_initialised=-1;
+            return;
+        }
+        max_icons=max_ic;
+        is_initialised=1;
         icon=icon_;
         max_no=max_n;
         no=0;
@@ -279,7 +307,60 @@ bool compare_article_titles(article_title_url a, article_title_url b)
     return a.title<b.title?true:false;
 }
 
+std::string to_string(int a)
+{
+    std::string to_return;
+    to_return.clear();
+    char temp;
+    while(a>0)
+    {
+        temp='0'+a%10;
+        to_return+=temp;
+        a/=10;
+    }
+    return to_return;
+}
 
+std::string process_links(std::string input)
+{
+    std::string output;
+    output.clear();
+    int pos=0;
+    while(pos<input.size())
+    {
+        if(input[pos]!='%')
+        {
+            output+=input[pos];
+        }
+        else
+        {
+            pos+=2;
+            output+=' ';
+        }
+        pos++;
+        if(input[pos]=='#')
+            return output;
+    }
+    return output;
+}
+
+std::string process_links_2(std::string input)          //Removes double or triple spaces from URLs.
+{
+    std::string output;
+    output.clear();
+    int pos=0;
+    while(pos<input.size())
+    {
+        if(input[pos]==' ')
+        {
+            while((input[pos+1]==' ')&&(pos<input.size()))
+                pos++;
+        }
+        output+=input[pos];
+        pos++;
+    }
+    return output;
+}
 int main(int argc, char* argv[])
 {
 
@@ -341,7 +422,6 @@ int main(int argc, char* argv[])
         int c=0;
         for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
             c++;
-        progress.initialise('#',c);
         //Test 1: Internal Checksum
         if(run_all||checksum||no_args)
         {
@@ -354,6 +434,7 @@ int main(int argc, char* argv[])
                 if(error_details)
                 {
                     std::cout<<"Details: \n";
+                    std::cout<<"ZIM File Checksum: "<<f.getChecksum()<<"\n";
                 }
             }
         }
@@ -393,6 +474,22 @@ int main(int argc, char* argv[])
             else
             {
                 std::cout<<"Fail\n";
+                if(error_details)
+                {
+                    std::cout<<"Details: \n";
+                    if(!test_meta[0])
+                        std::cout<<"Title not found in Metadata\n";
+                    if(!test_meta[1])
+                        std::cout<<"Creator not found in Metadata\n";
+                    if(!test_meta[2])
+                        std::cout<<"Publisher not found in Metadata\n";
+                    if(!test_meta[3])
+                        std::cout<<"Date not found in Metadata\n";
+                    if(!test_meta[4])
+                        std::cout<<"Description not found in Metadata\n";
+                    if(!test_meta[5])
+                        std::cout<<"Language not found in Metadata\n";
+                }
             }
         }
 
@@ -437,6 +534,10 @@ int main(int argc, char* argv[])
             else
             {
                 std::cout<<"Fail\n";
+                if(error_details)
+                {
+                    std::cout<<"Main Page Index stored in File Header: "<<fh.getMainPage()<<"\n";
+                }
             }
         }
 
@@ -444,12 +545,13 @@ int main(int argc, char* argv[])
         //Test 5: Redundant Data:
         if(run_all||redundant_data||no_args)
         {
-            std::cout<<"\nTest 5: Redundant data: "<<std::flush;
+            std::cout<<"\nTest 5: Redundant data: \n"<<std::flush;
 
             test_=false;
             int max=0;
             int k;
-            std::cout<<"\nCreating Data Structures...\n"<<std::flush;
+            //std::cout<<"\nCreating Data Structures...\n"<<std::flush;
+            progress.initialise('#',c,16);
             for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
             {
                 k=it->getArticleSize();
@@ -467,12 +569,12 @@ int main(int argc, char* argv[])
             article_index article;
 
             //Adding data to hash Tree.
-            std::cout<<"\nAdding Data to Hash Tables from file...\n"<<std::flush;
+            //std::cout<<"\nAdding Data to Hash Tables from file...\n"<<std::flush;
             int i=0;
             char arr[100000];
             std::string ar;
             zim::Blob bl;
-            progress.initialise('#',c);
+            progress.initialise('#',c,16);
             int sz=0;
             for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
             {
@@ -489,9 +591,9 @@ int main(int argc, char* argv[])
             }
             //Checking through hash tree for redundancies.
             //Sorting the hash tree.
-            std::cout<<"\nSorting Hash Tree...\n"<<std::flush;
+            //std::cout<<"\nSorting Hash Tree...\n"<<std::flush;
             int hash_main_size=hash_main.size();
-            progress.initialise('#',c);
+            progress.initialise('#',hash_main_size,16);
             for(int i=0; i<hash_main_size; i++)
             {
                 hash_main[i].sort();
@@ -499,8 +601,8 @@ int main(int argc, char* argv[])
             }
             std::vector<int_pair> to_verify;
             //Processing the tree
-            std::cout<<"\nSearching for redundant Data...\n"<<std::flush;
-            progress.initialise('#',c);
+            //std::cout<<"\nSearching for redundant Data...\n"<<std::flush;
+            progress.initialise('#',hash_main_size,16);
             for(int i=0; i<hash_main_size; i++)
             {
                 std::list<article_index>::iterator it=hash_main[i].begin();
@@ -513,9 +615,12 @@ int main(int argc, char* argv[])
                     if(it->hash_==prev.hash_)
                     {
                         int_pair p;
-                        p.a=it->index;
-                        p.b=prev.index;
-                        to_verify.push_back(p);
+                        if(it->index!=prev.index)
+                        {
+                            p.a=it->index;
+                            p.b=prev.index;
+                            to_verify.push_back(p);
+                        }
                     }
                     prev.index=it->index;
                     prev.hash_=it->hash_;
@@ -523,8 +628,9 @@ int main(int argc, char* argv[])
                 progress.report();
             }
             test_=true;
-            std::cout<<"\nVerifying Similar Articles for redundancies.. \n"<<std::flush;
-            progress.initialise('#',c);
+            //std::cout<<"\nVerifying Similar Articles for redundancies.. \n"<<std::flush;
+            progress.initialise('#',to_verify.size(),16);
+            std::string output_details;
             for(int i=0; i<to_verify.size(); i++)
             {
                 bool op=false;
@@ -538,14 +644,23 @@ int main(int argc, char* argv[])
                     ++it;
                 s2=it->getPage();
                 if(s1==s2)
+                {
                     test_=false;
+                    output_details+="\nArticles ";
+                    output_details+=to_string(to_verify[i].a);
+                    output_details+=" and ";
+                    output_details+=to_string(to_verify[i].b);
+                    output_details+=" have the same content";
+                }
                 progress.report();
             }
             if(test_)
-                std::cout<<"Pass\n";
+                std::cout<<"\nPass\n";
             else
             {
-                std::cout<<"Fail\n";
+                std::cout<<"\nFail\n";
+                if(error_details)
+                    std::cout<<"Details: "<<output_details;
             }
         }
 
@@ -568,6 +683,8 @@ int main(int argc, char* argv[])
             }
             progress.initialise('#',c);
             test_=true;
+            std::string output_details;
+            int ct=0;
             for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
             {
                 if(it->getMimeType()=="text/html")
@@ -575,15 +692,27 @@ int main(int argc, char* argv[])
                     std::vector<std::string> links=get_links(it->getPage());
                     for(int i=0; i<links.size(); i++)
                     {
+                        links[i]=process_links(links[i]);
+                        links[i]=process_links_2(links[i]);
                         if(is_internal_url(links[i]))
                         {
-                            ar.title=links[i].substr(1,std::string::npos);
+                            ar.title=links[i].substr(3,std::string::npos);
                             bool found=false;
                             int nm=(int)links[i][1];
                             if(std::binary_search(titles[nm].begin(),titles[nm].end(),ar,compare_article_titles))
                                 found=true;
                             if(!found)
+                            {
+                                if(error_details)
+                                {
+                                    output_details+="\nArticle with URL '";
+                                    output_details+=links[i];
+                                    output_details+="' was not found in the ZIM file.";
+                                }
                                 test_=false;
+                            }
+                            else
+                                ct++;
                         }
                     }
                 }
@@ -594,15 +723,19 @@ int main(int argc, char* argv[])
             else
             {
                 std::cout<<"\nFail\n";
+                if(error_details)
+                {
+                    std::cout<<"Details: "<<output_details<<" "<<ct;
+                }
             }
         }
 
 
         //Test 7: Checking for external Dependencies.
-        int found_count=0;
         if(run_all||url_check_external||no_args)
         {
-            std::cout<<"\nTest 6: Searching for External Dependencies: \n"<<std::flush;
+            int found_count=0;
+            std::cout<<"\nTest 7: Searching for External Dependencies: \n"<<std::flush;
             progress.initialise('#',c);
             test_=true;
             for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
@@ -635,7 +768,7 @@ int main(int argc, char* argv[])
 
         if(run_all||mime_check||no_args)
         {
-            std::cout<<"\nTest 7: Verifying MIME Types.. \n"<<std::flush;
+            std::cout<<"\nTest 8: Verifying MIME Types.. \n"<<std::flush;
             progress.initialise('#',c);
             test_=true;
             for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
