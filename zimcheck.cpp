@@ -279,9 +279,6 @@ bool is_external_wikipedia_url(std::string s)
     if(std::regex_match(s,std::regex("(http://en.wikipedia.org/)(.*)")))
         return true;
 
-    if(std::regex_match(s,std::regex("(https://en.wikipedia.org/)(.*)")))
-        return true;
-
     if(std::regex_match(s,std::regex("(en.wikipedia.org/)(.*)")))
         return true;
 
@@ -289,6 +286,9 @@ bool is_external_wikipedia_url(std::string s)
         return true;
 
     if(std::regex_match(s,std::regex("(.*)(.wikimedia.org/)(.*)")))
+        return true;
+  
+    if(std::regex_match(s,std::regex("(https://en.wikipedia.org/)(.*)")))
         return true;
 
     return false;
