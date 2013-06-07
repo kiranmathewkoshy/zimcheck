@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <zim/file.h>
+#include <getopt.h>
 #include <zim/fileiterator.h>
 #include <iostream>
 #include <string>
@@ -348,7 +349,7 @@ std::string process_links_2(std::string input)          //Removes double or trip
     }
     return output;
 }
-
+static int verbose_flag;
 int main (int argc, char **argv)
 {
     //Processing Flags passed to the program.
@@ -397,7 +398,25 @@ int main (int argc, char **argv)
                   << std::flush;
         return -1;
     }
-    while ((c = getopt (argc, argv, "ACMFPRUXED")) != -1)
+    while (1)
+    {
+        static struct option long_options[] =
+             {
+               /* These options set a flag. */
+               {"verbose", no_argument,       &verbose_flag, 1},
+               {"brief",   no_argument,       &verbose_flag, 0},
+               /* These options don't set a flag.
+                  We distinguish them by their indices. */
+               {"add",     no_argument,       0, 'a'},
+               {"append",  no_argument,       0, 'b'},
+               {"delete",  required_argument, 0, 'd'},
+               {"create",  required_argument, 0, 'c'},
+               {"file",    required_argument, 0, 'f'},
+               {0, 0, 0, 0}
+             };
+        c = getopt (argc, argv, "ACMFPRUXED");
+        if(c==-1)
+            break;
         switch (c)
         {
         case 'A':
@@ -462,6 +481,7 @@ int main (int argc, char **argv)
         default:
             abort ();
         }
+    }
 
     if((run_all||checksum||metadata||favicon||main_page||redundant_data||url_check||mime_check)==false)
         no_args=true;
