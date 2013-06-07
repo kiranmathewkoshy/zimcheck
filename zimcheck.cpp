@@ -28,6 +28,7 @@
 #include <algorithm>
 #include <regex>
 #include <cstring>
+#include <unistd.h>
 std::vector <std::string> get_links(std::string page)           //Returns a vector of the links in a particular page. includes links under 'href' and 'src'
 {
     std::vector <std::string> links;
@@ -279,6 +280,9 @@ bool is_external_wikipedia_url(std::string s)
     if(std::regex_match(s,std::regex("(http://en.wikipedia.org/)(.*)")))
         return true;
 
+    if(std::regex_match(s,std::regex("(https://en.wikipedia.org/)(.*)")))
+        return true;
+
     if(std::regex_match(s,std::regex("(en.wikipedia.org/)(.*)")))
         return true;
 
@@ -286,9 +290,6 @@ bool is_external_wikipedia_url(std::string s)
         return true;
 
     if(std::regex_match(s,std::regex("(.*)(.wikimedia.org/)(.*)")))
-        return true;
-  
-    if(std::regex_match(s,std::regex("(https://en.wikipedia.org/)(.*)")))
         return true;
 
     return false;
@@ -361,6 +362,8 @@ std::string process_links_2(std::string input)          //Removes double or trip
     }
     return output;
 }
+
+
 int main(int argc, char* argv[])
 {
 
@@ -761,11 +764,15 @@ int main(int argc, char* argv[])
             else
             {
                 std::cout<<"\nFail\n";
+                if(error_details)
+                {
+                    std::cout<<"External Dependencies found in Articles\n";
+                }
             }
         }
 
         //Test 8: Verifying MIME Types
-
+/*
         if(run_all||mime_check||no_args)
         {
             std::cout<<"\nTest 8: Verifying MIME Types.. \n"<<std::flush;
@@ -783,7 +790,7 @@ int main(int argc, char* argv[])
                 std::cout<<"\nFail\n";
             }
         }
-
+*/
 
 
     }
