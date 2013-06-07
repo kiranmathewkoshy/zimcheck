@@ -377,15 +377,25 @@ int main (int argc, char **argv)
                   "\n"
                   "options:\n"
                   "  -A        run all tests. Default if no flags are given.\n"
+                  "  --all        run all tests. Default if no flags are given.\n"
                   "  -C        Internal CheckSum Test\n"
+                  "  --checksum       Internal CheckSum Test\n"
                   "  -M        MetaData Entries\n"
+                  "  --metadata        MetaData Entries\n"
                   "  -F        Favicon\n"
+                  "  --favicon        Favicon\n"
                   "  -P        Main page\n"
+                  "  --main        Main page\n"
                   "  -R        Redundant data check\n"
+                  "  --redundant        Redundant data check\n"
                   "  -U        URL checks\n"
+                  "  --url_internal        URL checks\n"
                   "  -X        External Dependency check\n"
+                  "  --url_external        External Dependency check\n"
                   "  -E        MIME checks\n"
+                  "  --mime        MIME checks\n"
                   "  -D        Lists Details of the errors in the ZIM file.\n"
+                  "  --details        Lists Details of the errors in the ZIM file.\n"
                   "\n"
                   "examples:\n"
                   "  " << argv[0] << " -A wikipedia.zim\n"
@@ -402,23 +412,35 @@ int main (int argc, char **argv)
     {
         static struct option long_options[] =
              {
-               /* These options set a flag. */
-               {"verbose", no_argument,       &verbose_flag, 1},
-               {"brief",   no_argument,       &verbose_flag, 0},
-               /* These options don't set a flag.
-                  We distinguish them by their indices. */
-               {"add",     no_argument,       0, 'a'},
-               {"append",  no_argument,       0, 'b'},
-               {"delete",  required_argument, 0, 'd'},
-               {"create",  required_argument, 0, 'c'},
-               {"file",    required_argument, 0, 'f'},
+               {"all",     no_argument,       0, 'A'},
+               {"checksum",  no_argument,       0, 'C'},
+               {"metadata",  no_argument,       0, 'M'},
+               {"favicon",  no_argument,       0, 'F'},
+               {"main",  no_argument,       0, 'P'},
+               {"redundant",  no_argument,       0, 'R'},
+               {"url_internal",  no_argument,       0, 'U'},
+               {"url_external",  no_argument,       0, 'X'},
+               {"mime",  no_argument,       0, 'E'},
+               {"details",  no_argument,       0, 'D'},
                {0, 0, 0, 0}
              };
-        c = getopt (argc, argv, "ACMFPRUXED");
+        int option_index = 0;
+        c = getopt_long (argc, argv, "ACMFPRUXED",
+                            long_options, &option_index);
+        //c = getopt (argc, argv, "ACMFPRUXED");
         if(c==-1)
             break;
         switch (c)
         {
+        /*case 0:
+            if (long_options[option_index].flag != 0)
+                 break;
+            printf ("option %s", long_options[option_index].name);
+            if (optarg)
+                 printf (" with arg %s", optarg);
+            printf ("\n");
+            break;
+        */
         case 'A':
             run_all = true;
             break;
