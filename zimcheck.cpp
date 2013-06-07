@@ -779,7 +779,9 @@ int main (int argc, char **argv)
             progress.initialise('#',c);
             test_=true;
             std::string output_details;
-            int ct=0;
+            std::string previousLink;
+            int previousIndex=-1;
+            int index;
             for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
             {
                 if(it->getMimeType()=="text/html")
@@ -800,14 +802,19 @@ int main (int argc, char **argv)
                             {
                                 if(error_details)
                                 {
-                                    output_details+="\nArticle with URL '";
-                                    output_details+=links[i];
-                                    output_details+="' was not found in the ZIM file.";
+                                    index=it->getIndex();
+                                    if((previousLink!=links[i])&&(previousIndex!=index))
+                                    {
+                                        output_details+="\nArticle '";
+                                        output_details+=links[i];
+                                        output_details+="' was not found. Linked in Article ";
+                                        output_details+=to_string(index);
+                                        previousLink=links[i];
+                                        previousIndex=index;
+                                    }
                                 }
                                 test_=false;
                             }
-                            else
-                                ct++;
                         }
                     }
                 }
@@ -820,7 +827,7 @@ int main (int argc, char **argv)
                 std::cout<<"\nFail\n";
                 if(error_details)
                 {
-                    std::cout<<"Details: "<<output_details<<" "<<ct;
+                    std::cout<<"Details: "<<output_details<<" ";
                 }
             }
         }
@@ -832,6 +839,7 @@ int main (int argc, char **argv)
             int found_count=0;
             std::cout<<"\nTest 7: Searching for External Dependencies: \n"<<std::flush;
             progress.initialise('#',c);
+            std::list<std::string> externalDependencyList;
             test_=true;
             for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
             {
@@ -845,6 +853,7 @@ int main (int argc, char **argv)
                             if(!is_external_wikipedia_url(links[i]))
                             {
                                 test_=false;
+                                externalDependencyList.push_back(it->getUrl());
                             }
                         }
                     }
@@ -858,7 +867,16 @@ int main (int argc, char **argv)
                 std::cout<<"\nFail\n";
                 if(error_details)
                 {
-                    std::cout<<"External Dependencies found in Articles\n";
+                    externalDependencyList.sort();
+                    std::cout<<"External Dependencies found in the following Articles:\n";
+                    std::list<std::string>::iterator prev=externalDependencyList.begin();
+                    std::cout<<"\n"<<*prev;
+                    for(std::list<std::string>::iterator i=(++prev);i!=externalDependencyList.end();++i)
+                    {
+                        if(*i!=*prev)
+                            std::cout<<"\n"<<*i;
+                        prev=i;
+                    }
                 }
             }
         }
