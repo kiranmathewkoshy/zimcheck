@@ -1,21 +1,7 @@
-/*
- * Copyright (C) 2012 Kiran mathew Koshy
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but
- * is provided AS IS, WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, and
- * NON-INFRINGEMENT.  See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
- *
- */
+#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include <zim/file.h>
 #include <zim/fileiterator.h>
 #include <iostream>
@@ -29,6 +15,7 @@
 #include <regex>
 #include <cstring>
 #include <unistd.h>
+
 std::vector <std::string> get_links(std::string page)           //Returns a vector of the links in a particular page. includes links under 'href' and 'src'
 {
     std::vector <std::string> links;
@@ -363,34 +350,28 @@ std::string process_links_2(std::string input)          //Removes double or trip
     return output;
 }
 
-
-int main(int argc, char* argv[])
+int main (int argc, char **argv)
 {
-
     //Processing Flags passed to the program.
 
-    zim::Arg<bool> run_all(argc, argv, 'A');
-    zim::Arg<bool> checksum(argc, argv, 'C');
-    zim::Arg<bool> metadata(argc, argv, 'M');
-    zim::Arg<bool> favicon(argc, argv, 'F');
-    zim::Arg<bool> main_page(argc, argv, 'P');
-    zim::Arg<bool> redundant_data(argc, argv, 'R');
-    zim::Arg<bool> url_check(argc, argv, 'U');
-    zim::Arg<bool> url_check_external(argc, argv, 'X');
-    zim::Arg<bool> mime_check(argc, argv, 'E');
-    zim::Arg<bool> error_details(argc, argv, 'D');
-    progress_bar progress('#',10);
-    std::cout<<"\n"<<argv[argc-1]<<std::flush;
-    bool help=false;
-    for(int i=0; i<argc; i++)
-    {
-        if(strcmp(argv[i],"--help")==0)
-            help=true;
-    }
+    bool run_all=false;
+    bool checksum=false;
+    bool metadata=false;
+    bool favicon=false;
+    bool main_page=false;
+    bool redundant_data=false;
+    bool url_check=false;
+    bool url_check_external=false;
+    bool mime_check=false;
+    bool error_details=false;
     bool no_args=false;
-    if((run_all||checksum||metadata||favicon||main_page||redundant_data||url_check||mime_check)==false)
-        no_args=true;
-    if (argc <= 1||help)
+    int aflag = 0;
+    int bflag = 0;
+    int index;
+    int c;
+    progress_bar progress('#',10);
+    opterr = 0;
+    if (argc <= 1)
     {
         std::cerr << "usage: " << argv[0] << " [options] zimfile\n"
                   "\n"
@@ -417,6 +398,76 @@ int main(int argc, char* argv[])
                   << std::flush;
         return -1;
     }
+    while ((c = getopt (argc, argv, "ACMFPRUXED")) != -1)
+        switch (c)
+        {
+        case 'A':
+            run_all = true;
+            break;
+        case 'C':
+            checksum = true;
+            break;
+        case 'M':
+            metadata = true;
+            break;
+        case 'F':
+            favicon = true;
+            break;
+        case 'P':
+            main_page = true;
+            break;
+        case 'R':
+            redundant_data = true;
+            break;
+        case 'U':
+            url_check = true;
+            break;
+        case 'X':
+            url_check_external = true;
+            break;
+        case 'E':
+            mime_check = true;
+            break;
+        case 'D':
+            error_details = true;
+            break;
+        case '?':
+            if (optopt == 'c')
+                std::cerr<<"Option "<<(char)optopt<<" requires an argument.\n"
+                         "options:\n"
+                         "  -A        run all tests. Default if no flags are given.\n"
+                         "  -C        Internal CheckSum Test\n"
+                         "  -M        MetaData Entries\n"
+                         "  -F        Favicon\n"
+                         "  -P        Main page\n"
+                         "  -R        Redundant data check\n"
+                         "  -U        URL checks\n"
+                         "  -X        External Dependency check\n"
+                         "  -E        MIME checks\n"
+                         "  -D        Lists Details of the errors in the ZIM file.\n"
+                         "\n"
+                         "examples:\n"
+                         "  " << argv[0] << " -A wikipedia.zim\n"
+                         "  " << argv[0] << " -C wikipedia.zim\n"
+                         "  " << argv[0] << " -F -R wikipedia.zim\n"
+                         "  " << argv[0] << " -MI wikipedia.zim\n"
+                         "  " << argv[0] << " -U wikipedia.zim\n"
+                         "  " << argv[0] << " -R -U wikipedia.zim\n"
+                         "  " << argv[0] << " -R -U -MI wikipedia.zim\n"
+                         << std::flush;
+            else if (isprint (optopt))
+                std::cerr<<"Unknown option `"<<optopt<<"'.\n";
+            else
+                std::cerr<<"Unknown option character `\\x"<<optopt<<"'.\n";
+            return 1;
+        default:
+            abort ();
+        }
+
+    if((run_all||checksum||metadata||favicon||main_page||redundant_data||url_check||mime_check)==false)
+        no_args=true;
+
+
     try
     {
         bool test_=false;
@@ -772,25 +823,25 @@ int main(int argc, char* argv[])
         }
 
         //Test 8: Verifying MIME Types
-/*
-        if(run_all||mime_check||no_args)
-        {
-            std::cout<<"\nTest 8: Verifying MIME Types.. \n"<<std::flush;
-            progress.initialise('#',c);
-            test_=true;
-            for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
-            {
-                ;
-                progress.report();
-            }
-            if(test_)
-                std::cout<<"\nPass\n";
-            else
-            {
-                std::cout<<"\nFail\n";
-            }
-        }
-*/
+        /*
+                if(run_all||mime_check||no_args)
+                {
+                    std::cout<<"\nTest 8: Verifying MIME Types.. \n"<<std::flush;
+                    progress.initialise('#',c);
+                    test_=true;
+                    for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
+                    {
+                        ;
+                        progress.report();
+                    }
+                    if(test_)
+                        std::cout<<"\nPass\n";
+                    else
+                    {
+                        std::cout<<"\nFail\n";
+                    }
+                }
+        */
 
 
     }
@@ -798,4 +849,6 @@ int main(int argc, char* argv[])
     {
         std::cerr << e.what() << std::endl;
     }
+
+    return 0;
 }
