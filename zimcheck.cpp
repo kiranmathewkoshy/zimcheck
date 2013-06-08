@@ -1,6 +1,3 @@
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
 #include <zim/file.h>
 #include <getopt.h>
@@ -8,13 +5,9 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <stdio.h>
-#include <vector>
 #include <list>
 #include <algorithm>
 #include <regex>
-#include <cstring>
-#include <unistd.h>
 
 std::vector <std::string> get_links(std::string page)           //Returns a vector of the links in a particular page. includes links under 'href' and 'src'
 {
@@ -122,7 +115,6 @@ public:
         return hash_<a.hash_?true:false;
 
     }
-
 };
 
 class article_title_url
@@ -248,8 +240,8 @@ public:
     int a;
     int b;
 };
-//Adler32 Hash Function
-int adler32(std::string buf)
+
+int adler32(std::string buf)                        //Adler32 Hash Function. Used to hash the BLOB data obtained from each article, for redundancy checks.
 {
     unsigned int s1 = 1;
     unsigned int s2 = 0;
