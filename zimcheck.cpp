@@ -8,6 +8,7 @@
 #include <list>
 #include <algorithm>
 #include <regex>
+#include <ctime>
 
 std::vector <std::string> get_links(std::string page)           //Returns a vector of the links in a particular page. includes links under 'href' and 'src'
 {
@@ -225,7 +226,16 @@ static int verbose_flag;
 
 int main (int argc, char **argv)
 {
-    //Processing Flags passed to the program.
+
+    bool overall_status=true;       //Overall status of test- wether it is a fail or a pass.
+
+    //To calculate the total time taken by the program to run.
+    time_t startTime,endTime;
+    double  timeDiffference;
+    time(&startTime);
+
+    //The boolean values which will be used to store the output from getopt_long().
+    //These boolean values will be then read by the program to execute the different parts of the program.
 
     bool run_all=false;
     bool checksum=false;
@@ -396,8 +406,8 @@ int main (int argc, char **argv)
                     std::cout<<"ZIM File Checksum: "<<f.getChecksum()<<"\n";
                 }
             }
+            overall_status&=test_;
         }
-
 
         //Test 2: Metadata Entries:
         if(run_all||metadata||no_args)
@@ -450,8 +460,8 @@ int main (int argc, char **argv)
                         std::cout<<"Language not found in Metadata\n";
                 }
             }
+            overall_status&=test_;
         }
-
 
         //Test 3: Test for Favicon.
         if(run_all||favicon||no_args)
@@ -472,6 +482,7 @@ int main (int argc, char **argv)
             {
                 std::cout<<"Fail\n";
             }
+            overall_status&=test_;
         }
 
 
@@ -498,6 +509,7 @@ int main (int argc, char **argv)
                     std::cout<<"Main Page Index stored in File Header: "<<fh.getMainPage()<<"\n";
                 }
             }
+            overall_status&=test_;
         }
 
 
@@ -625,6 +637,7 @@ int main (int argc, char **argv)
                     std::cout<<"Details: "<<output_details;
             }
         }
+        overall_status&=test_;
 
         //Test 6: Verifying Internal URLs
         if(run_all||url_check||no_args)
@@ -673,7 +686,7 @@ int main (int argc, char **argv)
                                         output_details+="\nArticle '";
                                         output_details+=links[i];
                                         output_details+="' was not found. Linked in Article ";
-                                        output_details+=to_string(index);
+                                        output_details+=std::to_string(index);
                                         previousLink=links[i];
                                         previousIndex=index;
                                     }
@@ -695,6 +708,7 @@ int main (int argc, char **argv)
                     std::cout<<"Details: "<<output_details<<" ";
                 }
             }
+            overall_status&=test_;
         }
 
 
@@ -744,6 +758,7 @@ int main (int argc, char **argv)
                     }
                 }
             }
+            overall_status&=test_;
         }
 
         //Test 8: Verifying MIME Types
@@ -766,7 +781,14 @@ int main (int argc, char **argv)
                     }
                 }
         */
-
+        std::cout<<"\nOverall Test Status: ";
+        if(overall_status)
+            std::cout<<"Pass\n";
+        else
+            std::cout<<"Fail\n";
+        time(&endTime);
+        timeDiffference=difftime(endTime,startTime);
+        std::cout<<"\nTotal time taken: "<<timeDiffference<<" seconds.\n";
 
     }
     catch (const std::exception& e)
