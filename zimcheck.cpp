@@ -180,7 +180,7 @@ bool is_internal_url(std::string s)                 //Checks if a URL is an inte
         return false;
 }
 
-std::string to_string(int a)
+std::string to_string(int a)                        //Converts integer to string.
 {
     std::string to_return;
     to_return.clear();
@@ -194,7 +194,7 @@ std::string to_string(int a)
     return to_return;
 }
 
-std::string process_links(std::string input)
+std::string process_links(std::string input)        //Converts the %20 to space.Essential for comparing URLs.
 {
     std::string output;
     output.clear();
