@@ -54,22 +54,6 @@ std::vector <std::string> get_links(std::string page)           //Returns a vect
     return links;
 }
 
-class article_title_url                             //Stores titles and URLs ofeach article in theb ZIM file, used for URL check(internal).
-{
-public:
-    std::string title;
-    std::string url;
-    bool operator<(const article_title_url a)
-    {
-        return title<a.title?true:false;
-    }
-
-    bool operator== (const article_title_url a)
-    {
-        return title==a.title?true:false;
-    }
-};
-
 class progress_bar                                  //Class for implementing a progress bar(used in redundancy, url and MIME checks).
 {
 private:
@@ -194,11 +178,6 @@ bool is_internal_url(std::string s)                 //Checks if a URL is an inte
         return true;
     else
         return false;
-}
-
-bool compare_article_titles(article_title_url a, article_title_url b) //Function to compare
-{
-    return a.title<b.title?true:false;
 }
 
 std::string to_string(int a)
@@ -665,18 +644,16 @@ int main (int argc, char **argv)
         if(run_all||url_check||no_args)
         {
             std::cout<<"\nTest 6: Verifying Internal URLs : \n"<<std::flush;
-            std::vector < std::vector<article_title_url> >titles;
+            std::vector < std::vector<std::string> >titles;
             titles.resize(256);
-            article_title_url ar;
+            std::string ar;
             for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
             {
-                ar.title=it->getTitle();
-                ar.url=it->getUrl();
-                titles[(int)it->getNamespace()].push_back(ar);
+                titles[(int)it->getNamespace()].push_back(it->getTitle());
             }
             for(int i=0; i<256; i++)
             {
-                std::sort(titles[i].begin(),titles[i].end(),compare_article_titles);
+                std::sort(titles[i].begin(),titles[i].end());
             }
             progress.initialise('#',c);
             test_=true;
@@ -695,10 +672,10 @@ int main (int argc, char **argv)
                         links[i]=process_links_2(links[i]);
                         if(is_internal_url(links[i]))
                         {
-                            ar.title=links[i].substr(3,std::string::npos);
+                            ar=links[i].substr(3,std::string::npos);
                             bool found=false;
                             int nm=(int)links[i][1];
-                            if(std::binary_search(titles[nm].begin(),titles[nm].end(),ar,compare_article_titles))
+                            if(std::binary_search(titles[nm].begin(),titles[nm].end(),ar))
                                 found=true;
                             if(!found)
                             {
