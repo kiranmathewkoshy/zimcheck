@@ -181,7 +181,9 @@ bool is_internal_url(std::string s)                 //Checks if a URL is an inte
         return false;
 }
 
-std::string process_links(std::string input)        //Converts the %20 to space.Essential for comparing URLs.
+//Removes extra spaces from URLs. Usually done by the browser, so web authors sometimes tend to ignore it.
+//Converts the %20 to space.Essential for comparing URLs.
+std::string process_links(std::string input)
 {
     std::string output;
     output.clear();
@@ -199,16 +201,9 @@ std::string process_links(std::string input)        //Converts the %20 to space.
         }
         pos++;
         if(input[pos]=='#')
-            return output;
+            break;
     }
-    return output;
-}
-
-std::string process_links_2(std::string input)          //Removes double or triple spaces from URLs.
-{
-    std::string output;
-    output.clear();
-    int pos=0;
+    pos=0;
     while(pos<input.size())
     {
         if(input[pos]==' ')
@@ -221,8 +216,6 @@ std::string process_links_2(std::string input)          //Removes double or trip
     }
     return output;
 }
-
-static int verbose_flag;
 
 int main (int argc, char **argv)
 {
@@ -291,6 +284,9 @@ int main (int argc, char **argv)
                   << std::flush;
         return -1;
     }
+
+
+    //Parsing through arguments using getopt_long(). Both long and short arguments are allowed.
     while (1)
     {
         static struct option long_options[] =
@@ -379,10 +375,12 @@ int main (int argc, char **argv)
         }
     }
 
+
+    //If no arguments are given to the program, all the tests are performed.
     if((run_all||checksum||metadata||favicon||main_page||redundant_data||url_check||mime_check)==false)
         no_args=true;
 
-
+    //Tests.
     try
     {
         bool test_=false;
@@ -410,6 +408,7 @@ int main (int argc, char **argv)
         }
 
         //Test 2: Metadata Entries:
+        //The file is searched for the compulsory metadata entries.
         if(run_all||metadata||no_args)
         {
             std::cout<<"\nTest  2: Metadata Entries: ";
@@ -514,6 +513,10 @@ int main (int argc, char **argv)
 
 
         //Test 5: Redundant Data:
+        //The entire file is parsed, and the articles are hashed and stores in separate linked lists(std::list), one each for each namespace.
+        //The lists are then sorted according to the hashes, and the articles with the same hashes are compared.
+        //A list of pairs of indexes of articles(those that have the same hash) are then created.
+        //Once the list of articles are created, they are compared one by one to see if they have the same content.If they do, it is reported to the user.
         if(run_all||redundant_data||no_args)
         {
             std::cout<<"\nTest 5: Redundant data: \n"<<std::flush;
@@ -521,7 +524,6 @@ int main (int argc, char **argv)
             test_=false;
             int max=0;
             int k;
-            //std::cout<<"\nCreating Data Structures...\n"<<std::flush;
             progress.initialise('#',c,16);
             for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
             {
@@ -577,8 +579,9 @@ int main (int argc, char **argv)
             }
             std::vector<std::pair<int,int> > to_verify;     //Vector containing list of pairs of articles whose hash has been found to be the same.
             //The above list of pairs of articles will be compared directly for redundancies.
-            //Processing the tree
-            //std::cout<<"\nSearching for redundant Data...\n"<<std::flush;
+
+
+
             progress.initialise('#',hash_main_size,16);
             for(int i=0; i<hash_main_size; i++)
             {
@@ -636,10 +639,15 @@ int main (int argc, char **argv)
                 if(error_details)
                     std::cout<<"Details: "<<output_details;
             }
+            overall_status&=test_;
         }
-        overall_status&=test_;
+
 
         //Test 6: Verifying Internal URLs
+        //All internal URLS are parsed, and compared with the existing articles in the zim file.
+        //If the internal URL is not valid, an error is reported.
+        //A list of Titles are collected from the file, and stored as a hash, similar to the way the hash is stored for redundancy check.
+        //Each URL obtained is compared with the hash.
         if(run_all||url_check||no_args)
         {
             std::cout<<"\nTest 6: Verifying Internal URLs : \n"<<std::flush;
@@ -665,15 +673,14 @@ int main (int argc, char **argv)
                 if(it->getMimeType()=="text/html")
                 {
                     std::vector<std::string> links=get_links(it->getPage());
-                    for(int i=0; i<links.size(); i++)
+                    for(int i=0;i<links.size();i++)
                     {
                         links[i]=process_links(links[i]);
-                        links[i]=process_links_2(links[i]);
                         if(is_internal_url(links[i]))
                         {
-                            ar=links[i].substr(3,std::string::npos);
+                            ar=(links[i]).substr(3,std::string::npos);
                             bool found=false;
-                            int nm=(int)links[i][1];
+                            int nm=(int)(links[i])[1];
                             if(std::binary_search(titles[nm].begin(),titles[nm].end(),ar))
                                 found=true;
                             if(!found)
@@ -713,6 +720,7 @@ int main (int argc, char **argv)
 
 
         //Test 7: Checking for external Dependencies.
+        //All external URLs are parsed, and non-wikipedia URLs are reported.
         if(run_all||url_check_external||no_args)
         {
             int found_count=0;
@@ -725,7 +733,7 @@ int main (int argc, char **argv)
                 if(it->getMimeType()=="text/html")
                 {
                     std::vector<std::string> links=get_links(it->getPage());
-                    for(int i=0; i<links.size(); i++)
+                    for(int i=0;i<links.size();i++)
                     {
                         if(!is_internal_url(links[i]))
                         {
@@ -740,20 +748,20 @@ int main (int argc, char **argv)
                 progress.report();
             }
             if(test_)
-                std::cout<<"\nPass\n";
+                std::cout<<"\nPass\n"<<std::flush;
             else
             {
-                std::cout<<"\nFail\n";
+                std::cout<<"\nFail\n"<<std::flush;
                 if(error_details)
                 {
                     externalDependencyList.sort();
-                    std::cout<<"External Dependencies found in the following Articles:\n";
+                    std::cout<<"External Dependencies found in the following Articles:\n"<<std::flush;
                     std::list<std::string>::iterator prev=externalDependencyList.begin();
                     std::cout<<"\n"<<*prev;
                     for(std::list<std::string>::iterator i=(++prev);i!=externalDependencyList.end();++i)
                     {
                         if(*i!=*prev)
-                            std::cout<<"\n"<<*i;
+                            std::cout<<"\n"<<*i<<std::flush;
                         prev=i;
                     }
                 }
@@ -762,6 +770,9 @@ int main (int argc, char **argv)
         }
 
         //Test 8: Verifying MIME Types
+        //MIME Checks is intended to verify that all the MIME types of all different articles are listed in the file header.
+        //As of now, there is no method in the existing zimlib to get the list of MIME types listed in the file header.
+        //A bug has been reported for the above problem, and once the bug is fixed, it will be used to add MIME checks to the zimcheck tool.
         /*
                 if(run_all||mime_check||no_args)
                 {
@@ -781,14 +792,14 @@ int main (int argc, char **argv)
                     }
                 }
         */
-        std::cout<<"\nOverall Test Status: ";
+        std::cout<<"\nOverall Test Status: "<<std::flush;
         if(overall_status)
-            std::cout<<"Pass\n";
+            std::cout<<"Pass\n"<<std::flush;
         else
-            std::cout<<"Fail\n";
+            std::cout<<"Fail\n"<<std::flush;
         time(&endTime);
         timeDiffference=difftime(endTime,startTime);
-        std::cout<<"\nTotal time taken: "<<timeDiffference<<" seconds.\n";
+        std::cout<<"\nTotal time taken: "<<timeDiffference<<" seconds.\n"<<std::flush;
 
     }
     catch (const std::exception& e)
