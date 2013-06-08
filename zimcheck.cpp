@@ -180,20 +180,6 @@ bool is_internal_url(std::string s)                 //Checks if a URL is an inte
         return false;
 }
 
-std::string to_string(int a)                        //Converts integer to string.
-{
-    std::string to_return;
-    to_return.clear();
-    char temp;
-    while(a>0)
-    {
-        temp='0'+a%10;
-        to_return+=temp;
-        a/=10;
-    }
-    return to_return;
-}
-
 std::string process_links(std::string input)        //Converts the %20 to space.Essential for comparing URLs.
 {
     std::string output;
@@ -623,9 +609,9 @@ int main (int argc, char **argv)
                 {
                     test_=false;
                     output_details+="\nArticles ";
-                    output_details+=to_string(to_verify[i].first);
+                    output_details+=std::to_string(to_verify[i].first);
                     output_details+=" and ";
-                    output_details+=to_string(to_verify[i].second);
+                    output_details+=std::to_string(to_verify[i].second);
                     output_details+=" have the same content";
                 }
                 progress.report();
