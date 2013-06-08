@@ -54,61 +54,6 @@ std::vector <std::string> get_links(std::string page)           //Returns a vect
     return links;
 }
 
-std::string parse_url(std::string url)            //Function to parse a url and to return the domain name.
-{
-    std::vector<std::string> link;
-    link.clear();
-    int counter=0;
-    for(int i=0; i<url.size(); i++)
-    {
-        if (url[i]=='.')
-            counter++;
-    }
-    link.resize(counter);
-    int i=0;
-    int pos=0;
-    for(i=0; i<counter; i++)
-    {
-        link[i]="";
-    }
-    i=0;
-    while(i<counter)
-    {
-        if(url[pos]!='.')
-            link[i]+=(char)url[pos];
-        else
-        {
-            i++;
-        }
-        pos++;
-    }
-    std::string op;
-    if(link.size()>2)
-        op=link[1];
-    link.clear();
-    return op;
-}
-bool is_wikipedia_url(std::string input)           //Function to check if an external url is under the wikipedia domain.
-{
-    std::string op=parse_url(input);
-    if(op=="wikipedia")
-        return true;
-    else
-        return false;
-}
-
-class article_index                                 //Stores the article index and the hash. Used for redundancy checks.
-{
-public:
-    unsigned int hash_;
-    int index;
-    bool operator<(const article_index a)
-    {
-        return hash_<a.hash_?true:false;
-
-    }
-};
-
 class article_title_url                             //Stores titles and URLs ofeach article in theb ZIM file, used for URL check(internal).
 {
 public:
@@ -210,21 +155,12 @@ private:
     }
 };
 
-/*
-class int_pair                                      //Class to store a pair of numbers
-{
-public:
-    int a;
-    int b;
-};
-*/
-
 int adler32(std::string buf)                        //Adler32 Hash Function. Used to hash the BLOB data obtained from each article, for redundancy checks.
 {
     unsigned int s1 = 1;
     unsigned int s2 = 0;
-
-    for (size_t n = 0; n <buf.size(); n++)
+    int sz=buf.size();
+    for (size_t n = 0; n <sz; n++)
     {
         s1 = (s1 + buf[n]) % 65521;
         s2 = (s2 + s1) % 65521;
@@ -232,7 +168,7 @@ int adler32(std::string buf)                        //Adler32 Hash Function. Use
     return (s2 << 16) | s1;
 }
 
-bool is_external_wikipedia_url(std::string s)
+bool is_external_wikipedia_url(std::string s)       //Checks if an external URL is a wikipedia URL.
 {
     if(std::regex_match(s,std::regex("(http://en.wikipedia.org/)(.*)")))
         return true;
@@ -252,7 +188,7 @@ bool is_external_wikipedia_url(std::string s)
     return false;
 }
 
-bool is_internal_url(std::string s)
+bool is_internal_url(std::string s)                 //Checks if a URL is an internal URL or not. Uses RegExp.
 {
     if(std::regex_match(s,std::regex("(/)(.)(/)(.*)")))
         return true;
@@ -260,7 +196,7 @@ bool is_internal_url(std::string s)
         return false;
 }
 
-bool compare_article_titles(article_title_url a, article_title_url b)
+bool compare_article_titles(article_title_url a, article_title_url b) //Function to compare
 {
     return a.title<b.title?true:false;
 }
@@ -319,7 +255,9 @@ std::string process_links_2(std::string input)          //Removes double or trip
     }
     return output;
 }
+
 static int verbose_flag;
+
 int main (int argc, char **argv)
 {
     //Processing Flags passed to the program.
@@ -402,15 +340,6 @@ int main (int argc, char **argv)
             break;
         switch (c)
         {
-        /*case 0:
-            if (long_options[option_index].flag != 0)
-                 break;
-            printf ("option %s", long_options[option_index].name);
-            if (optarg)
-                 printf (" with arg %s", optarg);
-            printf ("\n");
-            break;
-        */
         case 'A':
             run_all = true;
             break;
@@ -625,13 +554,18 @@ int main (int argc, char **argv)
                 progress.report();
             }
             //Data Storage system
-            std::vector<std::list<article_index> >hash_main;
+
+            //The hashes are stored as a pair: The first element in the pair- unsigned int contains the hash obtained from the adler32 function.
+            //The second element, an int, contains the index of the article in the ZIM file.
+            //   std::pair<unsigned int, int>
+
+            std::vector<std::list<std::pair<unsigned int, int> > >hash_main;
 
             //Allocating Double Hash Tree.
             hash_main.resize(max+1);
 
             //List of Articles to be compared against
-            article_index article;
+            std::pair<unsigned int, int > article;
 
             //Adding data to hash Tree.
             //std::cout<<"\nAdding Data to Hash Tables from file...\n"<<std::flush;
@@ -648,8 +582,8 @@ int main (int argc, char **argv)
                 ar.clear();
                 for(int i=0; i<sz; i++)
                     ar+=bl.data()[i];
-                article.hash_ = adler32(ar);
-                article.index=i;
+                article.first = adler32(ar);
+                article.second=i;
                 hash_main[ar.size()].push_back(article);
                 i++;
                 progress.report();
@@ -664,31 +598,29 @@ int main (int argc, char **argv)
                 hash_main[i].sort();
                 progress.report();
             }
-            std::vector<std::pair<int,int> > to_verify;
+            std::vector<std::pair<int,int> > to_verify;     //Vector containing list of pairs of articles whose hash has been found to be the same.
+            //The above list of pairs of articles will be compared directly for redundancies.
             //Processing the tree
             //std::cout<<"\nSearching for redundant Data...\n"<<std::flush;
             progress.initialise('#',hash_main_size,16);
             for(int i=0; i<hash_main_size; i++)
             {
-                std::list<article_index>::iterator it=hash_main[i].begin();
-                article_index prev;
-                prev.index=it->index;
-                prev.hash_=it->hash_;
+                std::list<std::pair<unsigned int, int> >::iterator it=hash_main[i].begin();
+                std::pair<unsigned int, int> prev;
+                prev.second=it->second;
+                prev.first=it->first;
                 ++it;
                 for (; it != hash_main[i].end(); ++it)
                 {
-                    if(it->hash_==prev.hash_)
+                    if(it->first==prev.first)
                     {
-                        std::pair<int,int> p;
-                        if(it->index!=prev.index)
+                        if(it->second!=prev.second)
                         {
-                            p.first=it->index;
-                            p.second=prev.index;
-                            to_verify.push_back(p);
+                            to_verify.push_back(std::make_pair(it->second,prev.second));
                         }
                     }
-                    prev.index=it->index;
-                    prev.hash_=it->hash_;
+                    prev.second=it->second;
+                    prev.first=it->first;
                 }
                 progress.report();
             }
