@@ -88,7 +88,7 @@ std::string parse_url(std::string url)            //Function to parse a url and 
     link.clear();
     return op;
 }
-bool is_wikipedia_url(std::string input)
+bool is_wikipedia_url(std::string input)           //Function to check if an external url is under the wikipedia domain.
 {
     std::string op=parse_url(input);
     if(op=="wikipedia")
@@ -96,16 +96,8 @@ bool is_wikipedia_url(std::string input)
     else
         return false;
 }
-bool verify_url(zim::File f,std::string url)        //Returns if a URL is present in a file.
-{
-    for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
-    {
-        if(url==it->getUrl())
-            return true;
-    }
-    return false;
-}
-class article_index                                 //Stores the article index and the hash.
+
+class article_index                                 //Stores the article index and the hash. Used for redundancy checks.
 {
 public:
     unsigned int hash_;
@@ -117,7 +109,7 @@ public:
     }
 };
 
-class article_title_url
+class article_title_url                             //Stores titles and URLs ofeach article in theb ZIM file, used for URL check(internal).
 {
 public:
     std::string title;
@@ -133,42 +125,40 @@ public:
     }
 };
 
-class progress_bar
+class progress_bar                                  //Class for implementing a progress bar(used in redundancy, url and MIME checks).
 {
 private:
-    char icon;
-    int max_icons;
-    int max_no;
-    int no;
-    int counter;
-    int is_initialised;
-    double displayed,count_max;
-public:
+    char icon;      //Character to be displayed
+    int max_icons;  //maximum no. of characters to be displayed.
+    int max_no;     //Maximum no of times report() will be called.
+    int no;         //number of characters displayed(at a particular time). Similar to the counter variable, except it counts the number of times the character is displayed.
+    int counter;    //Number of times report() has been called(at a particular time).
+    bool is_initialised;//Boolean value to store wether the object has been initialised or not. report() will not display any characters
+                        //if the is_initialised value is false.
+    public:
     progress_bar(char icon_,int max_n)
     {
         if(max_n<1)
         {
-            is_initialised=-1;
+            is_initialised=false;
             return;
         }
         if(max_n<1)
         {
-            is_initialised=-1;
+            is_initialised=false;
             return;
         }
-        is_initialised=1;
+        is_initialised=true;
         max_icons=80;
         icon=icon_;
         max_no=max_n;
         no=0;
         counter=0;
-        count_max=0.0;
-        displayed=0.0;
         return;
     }
     void report()
     {
-        if(is_initialised!=1)
+        if(!is_initialised)
             return;
         counter++;
         float i=(counter*1.0)/max_no;
@@ -180,66 +170,54 @@ public:
             std::cout<<icon<<std::flush;
         }
         if(no>=max_icons)
-            is_initialised=-1;
+            is_initialised=false;
         return;
     }
     void initialise(char icon_,int max_n)
     {
         if(max_n<1)
         {
-            is_initialised=-1;
+            is_initialised=false;
             return;
         }
-        if(max_n<1)
-        {
-            is_initialised=-1;
-            return;
-        }
-        is_initialised=1;
+        is_initialised=true;
         max_icons=80;
         icon=icon_;
         max_no=max_n;
         no=0;
         counter=0;
-        count_max=0.0;
-        displayed=0.0;
         return;
     }
     void initialise(char icon_,int max_n,int max_ic)
     {
         if(max_n<1)
         {
-            is_initialised=-1;
-            return;
-        }
-        if(max_n<1)
-        {
-            is_initialised=-1;
+            is_initialised=false;
             return;
         }
         if(max_ic<1)
         {
-            is_initialised=-1;
+            is_initialised=false;
             return;
         }
         max_icons=max_ic;
-        is_initialised=1;
+        is_initialised=true;
         icon=icon_;
         max_no=max_n;
         no=0;
         counter=0;
-        count_max=0.0;
-        displayed=0.0;
         return;
     }
 };
 
-class int_pair
+/*
+class int_pair                                      //Class to store a pair of numbers
 {
 public:
     int a;
     int b;
 };
+*/
 
 int adler32(std::string buf)                        //Adler32 Hash Function. Used to hash the BLOB data obtained from each article, for redundancy checks.
 {
@@ -686,7 +664,7 @@ int main (int argc, char **argv)
                 hash_main[i].sort();
                 progress.report();
             }
-            std::vector<int_pair> to_verify;
+            std::vector<std::pair<int,int> > to_verify;
             //Processing the tree
             //std::cout<<"\nSearching for redundant Data...\n"<<std::flush;
             progress.initialise('#',hash_main_size,16);
@@ -701,11 +679,11 @@ int main (int argc, char **argv)
                 {
                     if(it->hash_==prev.hash_)
                     {
-                        int_pair p;
+                        std::pair<int,int> p;
                         if(it->index!=prev.index)
                         {
-                            p.a=it->index;
-                            p.b=prev.index;
+                            p.first=it->index;
+                            p.second=prev.index;
                             to_verify.push_back(p);
                         }
                     }
@@ -723,20 +701,20 @@ int main (int argc, char **argv)
                 bool op=false;
                 zim::File::const_iterator it = f.begin();
                 std::string s1,s2;
-                for(int k=0; k<to_verify[i].a; k++)
+                for(int k=0; k<to_verify[i].first; k++)
                     ++it;
                 s1=it->getPage();
                 it = f.begin();
-                for(int k=0; k<to_verify[i].b; k++)
+                for(int k=0; k<to_verify[i].second; k++)
                     ++it;
                 s2=it->getPage();
                 if(s1==s2)
                 {
                     test_=false;
                     output_details+="\nArticles ";
-                    output_details+=to_string(to_verify[i].a);
+                    output_details+=to_string(to_verify[i].first);
                     output_details+=" and ";
-                    output_details+=to_string(to_verify[i].b);
+                    output_details+=to_string(to_verify[i].second);
                     output_details+=" have the same content";
                 }
                 progress.report();
@@ -903,3 +881,9 @@ int main (int argc, char **argv)
 
     return 0;
 }
+
+
+
+
+
+
