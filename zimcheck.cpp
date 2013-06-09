@@ -415,23 +415,20 @@ int main (int argc, char **argv)
             bool test_meta[6];
             for(int i=0; i<6; i++)
                 test_meta[i]=false;
-            for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
+            for (zim::File::const_iterator it = f.findx('M', "").second; it != f.end() && it->getNamespace() == 'M'; ++it)
             {
-                if(it->getNamespace()=='M')
-                {
-                    if(it->getTitle()=="Title")
-                        test_meta[0]=true;
-                    if(it->getTitle()=="Creator")
-                        test_meta[1]=true;
-                    if(it->getTitle()=="Publisher")
-                        test_meta[2]=true;
-                    if(it->getTitle()=="Date")
-                        test_meta[3]=true;
-                    if(it->getTitle()=="Description")
-                        test_meta[4]=true;
-                    if(it->getTitle()=="Language")
-                        test_meta[5]=true;
-                }
+                if(it->getTitle()=="Title")
+                    test_meta[0]=true;
+                if(it->getTitle()=="Creator")
+                    test_meta[1]=true;
+                if(it->getTitle()=="Publisher")
+                    test_meta[2]=true;
+                if(it->getTitle()=="Date")
+                    test_meta[3]=true;
+                if(it->getTitle()=="Description")
+                    test_meta[4]=true;
+                if(it->getTitle()=="Language")
+                    test_meta[5]=true;
             }
             test_=true;
             for(int i=0; i<6; i++)
