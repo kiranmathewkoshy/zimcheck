@@ -10,12 +10,13 @@
 #include <regex>
 #include <ctime>
 
-std::vector <std::string> get_links(std::string page)           //Returns a vector of the links in a particular page. includes links under 'href' and 'src'
+std::vector <std::string> get_links2(std::string page)           //Returns a vector of the links in a particular page. includes links under 'href' and 'src'
 {
     std::vector <std::string> links;
-    for(int i=0; i<page.size(); i++)
+    int sz=page.size();
+    for(int i=0; i<sz; i++)
     {
-        if(page[i]==' '&&i+5<page.size())
+        if(page[i]==' '&&i+5<sz)
         {
             if(page[i+1]=='h'&&page[i+2]=='r'&&page[i+3]=='e'&&page[i+4]=='f')      //Links under 'href' category.
             {
@@ -54,6 +55,52 @@ std::vector <std::string> get_links(std::string page)           //Returns a vect
     }
     return links;
 }
+
+void get_links(std::string page, std::vector <std::string> *links)           //Returns a vector of the links in a particular page. includes links under 'href' and 'src'
+{
+    int sz=page.size();
+    links->clear();
+    int startingPoint,length;
+    for(int i=0; i<sz; i++)
+    {
+        if(page[i]==' '&&i+5<sz)
+        {
+            if(page[i+1]=='h'&&page[i+2]=='r'&&page[i+3]=='e'&&page[i+4]=='f')      //Links under 'href' category.
+            {
+                i+=5;
+                while(page[i]!='=')
+                    i++;
+                while(page[i]!='"')
+                    i++;
+                startingPoint= ++i;
+                while(page[i]!='"')
+                {
+                    i++;
+                }
+                length=i-startingPoint;
+                links->push_back(page.substr(startingPoint,length));
+            }
+
+            if(page[i+1]=='s'&&page[i+2]=='r'&&page[i+3]=='c')      //Links under 'src' category.
+            {
+                i+=4;
+                while(page[i]!='=')
+                    i++;
+                while(page[i]!='"')
+                    i++;
+                startingPoint= ++i;
+
+                while(page[i]!='"')
+                {
+                    i++;
+                }
+                length=i-startingPoint;
+                links->push_back(page.substr(startingPoint,length));
+            }
+        }
+    }
+}
+
 
 class progress_bar                                  //Class for implementing a progress bar(used in redundancy, url and MIME checks).
 {
@@ -175,7 +222,7 @@ bool is_external_wikipedia_url(std::string s)       //Checks if an external URL 
 
 bool is_internal_url(std::string s)                 //Checks if a URL is an internal URL or not. Uses RegExp.
 {
-    if(std::regex_match(s,std::regex("(/)(.)(/)(.*)")))
+    if(std::regex_match(s,std::regex("/./.*")))
         return true;
     else
         return false;
@@ -188,33 +235,26 @@ std::string process_links(std::string input)
     std::string output;
     output.clear();
     int pos=0;
-    while(pos<input.size())
+
+    //URL Decoding.
+    char ch;
+    int i, ii;
+    for (i=0; i<input.size(); i++)
     {
-        if(input[pos]!='%')
+        if (int(input[i])==37)
         {
-            output+=input[pos];
+            sscanf(input.substr(i+1,2).c_str(), "%x", &ii);
+            ch=static_cast<char>(ii);
+            output+=ch;
+            i=i+2;
         }
         else
         {
-            pos+=2;
-            output+=' ';
+            output+=input[i];
         }
-        pos++;
-        if(input[pos]=='#')
-            break;
     }
-    pos=0;
-    while(pos<input.size())
-    {
-        if(input[pos]==' ')
-        {
-            while((input[pos+1]==' ')&&(pos<input.size()))
-                pos++;
-        }
-        output+=input[pos];
-        pos++;
-    }
-    return output;
+    int k=output.rfind("#");
+    return output.substr(0,k);
 }
 
 int main (int argc, char **argv)
@@ -665,20 +705,23 @@ int main (int argc, char **argv)
             std::string previousLink;
             int previousIndex=-1;
             int index;
+            int k=0;
+            std::vector<std::string> links;
             for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
             {
                 if(it->getMimeType()=="text/html")
                 {
-                    std::vector<std::string> links=get_links(it->getPage());
+                    get_links(it->getPage(),&links);
                     for(int i=0;i<links.size();i++)
                     {
+                        //std::cout<<"\n"<<links[i]<<std::flush;
                         links[i]=process_links(links[i]);
+                        //std::cout<<"\n"<<links[i]<<std::flush;
                         if(is_internal_url(links[i]))
-                        {
-                            ar=(links[i]).substr(3,std::string::npos);
+                        {   k++;
                             bool found=false;
                             int nm=(int)(links[i])[1];
-                            if(std::binary_search(titles[nm].begin(),titles[nm].end(),ar))
+                            if(std::binary_search(titles[nm].begin(),titles[nm].end(),(links[i]).substr(3)))
                                 found=true;
                             if(!found)
                             {
@@ -725,11 +768,12 @@ int main (int argc, char **argv)
             progress.initialise('#',c);
             std::list<std::string> externalDependencyList;
             test_=true;
+            std::vector<std::string> links;
             for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
             {
                 if(it->getMimeType()=="text/html")
                 {
-                    std::vector<std::string> links=get_links(it->getPage());
+                    get_links(it->getPage(),&links);
                     for(int i=0;i<links.size();i++)
                     {
                         if(!is_internal_url(links[i]))
