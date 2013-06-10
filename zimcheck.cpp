@@ -200,29 +200,20 @@ int adler32(std::string buf)                        //Adler32 Hash Function. Use
     return (s2 << 16) | s1;
 }
 
-bool is_external_wikipedia_url(std::string s)       //Checks if an external URL is a wikipedia URL.
+bool is_external_wikipedia_url(std::string *s)       //Checks if an external URL is a wikipedia URL.
 {
-    if(std::regex_match(s,std::regex("(http://en.wikipedia.org/)(.*)")))
+    if(std::regex_match( *s,std::regex(".*.wikipedia.org/.*")))
         return true;
 
-    if(std::regex_match(s,std::regex("(https://en.wikipedia.org/)(.*)")))
-        return true;
-
-    if(std::regex_match(s,std::regex("(en.wikipedia.org/)(.*)")))
-        return true;
-
-    if(std::regex_match(s,std::regex("(.*)(.wikipedia.org/)(.*)")))
-        return true;
-
-    if(std::regex_match(s,std::regex("(.*)(.wikimedia.org/)(.*)")))
+    if(std::regex_match( *s,std::regex(".*.wikimedia.org/.*")))
         return true;
 
     return false;
 }
 
-bool is_internal_url(std::string s)                 //Checks if a URL is an internal URL or not. Uses RegExp.
+bool is_internal_url(std::string *s)                 //Checks if a URL is an internal URL or not. Uses RegExp.
 {
-    if(std::regex_match(s,std::regex("/./.*")))
+    if(std::regex_match(*s,std::regex("/./.*")))
         return true;
     else
         return false;
@@ -417,7 +408,7 @@ int main (int argc, char **argv)
 
 
     //If no arguments are given to the program, all the tests are performed.
-    if((run_all||checksum||metadata||favicon||main_page||redundant_data||url_check||mime_check)==false)
+    if((run_all||checksum||metadata||favicon||main_page||redundant_data||url_check||url_check_external||mime_check)==false)
         no_args=true;
 
     //Tests.
@@ -717,7 +708,7 @@ int main (int argc, char **argv)
                         //std::cout<<"\n"<<links[i]<<std::flush;
                         links[i]=process_links(links[i]);
                         //std::cout<<"\n"<<links[i]<<std::flush;
-                        if(is_internal_url(links[i]))
+                        if(is_internal_url(&links[i]))
                         {   k++;
                             bool found=false;
                             int nm=(int)(links[i])[1];
@@ -776,9 +767,9 @@ int main (int argc, char **argv)
                     get_links(it->getPage(),&links);
                     for(int i=0;i<links.size();i++)
                     {
-                        if(!is_internal_url(links[i]))
+                        if(!is_internal_url(&links[i]))
                         {
-                            if(!is_external_wikipedia_url(links[i]))
+                            if(!is_external_wikipedia_url(&links[i]))
                             {
                                 test_=false;
                                 externalDependencyList.push_back(it->getUrl());
@@ -807,6 +798,7 @@ int main (int argc, char **argv)
                     }
                 }
             }
+            std::cout<<"\n"<<externalDependencyList.size()<<std::flush;
             overall_status&=test_;
         }
 
@@ -839,6 +831,7 @@ int main (int argc, char **argv)
         else
             std::cout<<"Fail\n"<<std::flush;
         time(&endTime);
+
         timeDiffference=difftime(endTime,startTime);
         std::cout<<"\nTotal time taken: "<<timeDiffference<<" seconds.\n"<<std::flush;
 
