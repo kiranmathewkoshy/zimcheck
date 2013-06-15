@@ -1,3 +1,21 @@
+/*
+ * Copyright (C)  Kiran Mathew Koshy
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * is provided AS IS, WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, and
+ * NON-INFRINGEMENT.  See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+ *
+ */
 #include <unistd.h>
 #include <zim/file.h>
 #include <getopt.h>
@@ -200,15 +218,17 @@ int adler32(std::string buf)                        //Adler32 Hash Function. Use
     return (s2 << 16) | s1;
 }
 
-bool is_external_wikipedia_url(std::string *s)       //Checks if an external URL is a wikipedia URL.
+bool is_external_url(std::string *s)       //Checks if an external URL is a wikipedia URL.
 {
     if(std::regex_match( *s,std::regex(".*.wikipedia.org/.*")))
-        return true;
+        return false;
+
+    if(std::regex_match(*s,std::regex("/./.*")))
+        return false;
 
     if(std::regex_match( *s,std::regex(".*.wikimedia.org/.*")))
-        return true;
-
-    return false;
+        return  false;
+    return true;
 }
 
 bool is_internal_url(std::string *s)                 //Checks if a URL is an internal URL or not. Uses RegExp.
@@ -272,10 +292,12 @@ int main (int argc, char **argv)
     bool mime_check=false;
     bool error_details=false;
     bool no_args=false;
+    bool help=false;
     int aflag = 0;
     int bflag = 0;
     int index;
     int c;
+    std::string filename="";
     progress_bar progress('#',10);
     opterr = 0;
     if (argc <= 1)
@@ -332,10 +354,11 @@ int main (int argc, char **argv)
                {"url_external",  no_argument,       0, 'X'},
                {"mime",  no_argument,       0, 'E'},
                {"details",  no_argument,       0, 'D'},
+               {"help",  no_argument,       0, 'H'},
                {0, 0, 0, 0}
              };
         int option_index = 0;
-        c = getopt_long (argc, argv, "ACMFPRUXED",
+        c = getopt_long (argc, argv, "ACMFPRUXEDHacmfpruxedh",
                             long_options, &option_index);
         //c = getopt (argc, argv, "ACMFPRUXED");
         if(c==-1)
@@ -345,32 +368,68 @@ int main (int argc, char **argv)
         case 'A':
             run_all = true;
             break;
+        case 'a':
+            run_all = true;
+            break;
         case 'C':
+            checksum = true;
+            break;
+        case 'c':
             checksum = true;
             break;
         case 'M':
             metadata = true;
             break;
+        case 'm':
+            metadata = true;
+            break;
         case 'F':
+            favicon = true;
+            break;
+        case 'f':
             favicon = true;
             break;
         case 'P':
             main_page = true;
             break;
+        case 'p':
+            main_page = true;
+            break;
         case 'R':
+            redundant_data = true;
+            break;
+        case 'r':
             redundant_data = true;
             break;
         case 'U':
             url_check = true;
             break;
+        case 'u':
+            url_check = true;
+            break;
         case 'X':
+            url_check_external = true;
+            break;
+        case 'x':
             url_check_external = true;
             break;
         case 'E':
             mime_check = true;
             break;
+        case 'e':
+            mime_check = true;
+            break;
         case 'D':
             error_details = true;
+            break;
+        case 'd':
+            error_details = true;
+            break;
+        case 'H':
+            help=true;
+            break;
+        case 'h':
+            help=true;
             break;
         case '?':
             if (optopt == 'c')
@@ -404,11 +463,62 @@ int main (int argc, char **argv)
         default:
             abort ();
         }
+        if(optind<argc)
+        {
+            filename=argv[optind];
+        }
+        else
+        {
+            std::cout<<"File Name not given as argument\n";
+            return -1   ;
+        }
+    }
+    if(help)
+    {
+        std::cout<<"\n"
+        "zimcheck\n"
+        "Written by : Kiran Mathew Koshy\n"
+    "(kiranmathewkoshy@gmail.com)\n"
+
+
+    "This is a tool which can be used to check the quality of a ZIM file\n."
+    "Here's a list of the checks that  are done on a ZIM file:\n"
+    "1 - Internal checksum: launch internal checksum verification\n"
+    "2 - Metadata Entries: checks if all metadata entries are present in the ZIM file.\n"
+    "3 - Favicon: Checks if the favicon is present in the ZIM file.\n"
+    "4 - Main Page entry: Checks wether the main page is present, and that it points to a valid article.\n"
+    "5 - Redundant data check: Checks if there are any redundant articles.\n"
+    "6 - Internal URL check: checks all interla URLs to make sure that they are valid URLs.\n"
+    "7 - Searching for External Dependencies: The ZIM file is searched for external dependencies.\n"
+    "8 - MIME type check: checks the validity of MIME type of all articles in the ZIM file.\n"
+    "To list the details of the error reported, add a flag -D.\n"
+    "For most errors, the details of the error will be quite lengthy, so it is reccomended that the user redirect the output to a file.\n"
+    "Usage:\n"
+    "./zimcheckusage: ./zimcheck [options] zimfile\n"
+    "options:\n"
+    "-A        run all tests. Default if no flags are given.\n"
+    "-C        Internal CheckSum Test\n"
+    "-M        MetaData Entries\n"
+    "-F        Favicon\n"
+    "-P        Main page\n"
+    "-R        Redundant data check\n"
+    "-U        URL checks\n"
+    "-E        MIME checks\n"
+    "-D         Details of error\n"
+    "-H        Displays Help\n"
+    "examples:\n"
+    "./zimcheck -A wikipedia.zim\n"
+  "./zimcheck -C wikipedia.zim\n"
+  "./zimcheck -F -R wikipedia.zim\n"
+  "./zimcheck -MI wikipedia.zim\n"
+  "./zimcheck -U wikipedia.zim\n"
+  "./zimcheck -R -U wikipedia.zim\n"
+  "./zimcheck -R -U -MI wikipedia.zim\n";
+    return 0;
     }
 
-
     //If no arguments are given to the program, all the tests are performed.
-    if((run_all||checksum||metadata||favicon||main_page||redundant_data||url_check||url_check_external||mime_check)==false)
+    if((run_all||checksum||metadata||favicon||main_page||redundant_data||url_check||url_check_external||mime_check||help)==false)
         no_args=true;
 
     //Tests.
@@ -417,9 +527,7 @@ int main (int argc, char **argv)
         bool test_=false;
         zim::File f(argv[argc-1]);
         std::cout<<"\nRunning Tests...";
-        int c=0;
-        for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
-            c++;
+        int c=f.getFileheader().getArticleCount();
         //Test 1: Internal Checksum
         if(run_all||checksum||no_args)
         {
@@ -767,14 +875,14 @@ int main (int argc, char **argv)
                     get_links(it->getPage(),&links);
                     for(int i=0;i<links.size();i++)
                     {
-                        if(!is_internal_url(&links[i]))
-                        {
-                            if(!is_external_wikipedia_url(&links[i]))
+                        //if(!is_internal_url(&links[i]))
+                        //{
+                            if(is_external_url(&links[i]))
                             {
                                 test_=false;
                                 externalDependencyList.push_back(it->getUrl());
                             }
-                        }
+                        //}
                     }
                 }
                 progress.report();
@@ -798,7 +906,7 @@ int main (int argc, char **argv)
                     }
                 }
             }
-            std::cout<<"\n"<<externalDependencyList.size()<<std::flush;
+            std::cout<<"\n"<<externalDependencyList.size()<<"\n"<<std::flush;
             overall_status&=test_;
         }
 
