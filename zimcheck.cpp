@@ -268,6 +268,51 @@ std::string process_links(std::string input)
     return output.substr(0,k);
 }
 
+void display_help()
+{
+       std::cout<<"\n"
+        "zimcheck\n"
+        "Written by : Kiran Mathew Koshy\n"
+    "(kiranmathewkoshy@gmail.com)\n"
+
+
+    "This is a tool which can be used to check the quality of a ZIM file\n."
+    "Here's a list of the checks that  are done on a ZIM file:\n"
+    "1 - Internal checksum: launch internal checksum verification\n"
+    "2 - Metadata Entries: checks if all metadata entries are present in the ZIM file.\n"
+    "3 - Favicon: Checks if the favicon is present in the ZIM file.\n"
+    "4 - Main Page entry: Checks wether the main page is present, and that it points to a valid article.\n"
+    "5 - Redundant data check: Checks if there are any redundant articles.\n"
+    "6 - Internal URL check: checks all interla URLs to make sure that they are valid URLs.\n"
+    "7 - Searching for External Dependencies: The ZIM file is searched for external dependencies.\n"
+    "8 - MIME type check: checks the validity of MIME type of all articles in the ZIM file.\n"
+    "To list the details of the error reported, add a flag -D.\n"
+    "For most errors, the details of the error will be quite lengthy, so it is reccomended that the user redirect the output to a file.\n"
+    "Usage:\n"
+    "./zimcheckusage: ./zimcheck [options] zimfile\n"
+    "options:\n"
+    "-A , --all             run all tests. Default if no flags are given.\n"
+    "-C , --checksum        Internal CheckSum Test\n"
+    "-M , --metadata        MetaData Entries\n"
+    "-F , --favicon         Favicon\n"
+    "-P , --main            Main page\n"
+    "-R , --redundant       Redundant data check\n"
+    "-U , --url_internal    URL check - Internal URLs\n"
+    "-X , --url_external    URL check - Internal URLs\n"
+    "-E , --mime            MIME checks\n"
+    "-D , --details         Details of error\n"
+    "-H , --help            Displays Help\n"
+    "examples:\n"
+    "./zimcheck -A wikipedia.zim\n"
+  "./zimcheck --checksum --redundant wikipedia.zim\n"
+  "./zimcheck -F -R wikipedia.zim\n"
+  "./zimcheck -M --favicon wikipedia.zim\n"
+  "./zimcheck -U wikipedia.zim\n"
+  "./zimcheck -redundant -X wikipedia.zim\n"
+  "./zimcheck -R -U -M wikipedia.zim\n";
+    return;
+}
+
 int main (int argc, char **argv)
 {
 
@@ -300,44 +345,6 @@ int main (int argc, char **argv)
     std::string filename="";
     progress_bar progress('#',10);
     opterr = 0;
-    if (argc <= 1)
-    {
-        std::cerr << "usage: " << argv[0] << " [options] zimfile\n"
-                  "\n"
-                  "options:\n"
-                  "  -A        run all tests. Default if no flags are given.\n"
-                  "  --all        run all tests. Default if no flags are given.\n"
-                  "  -C        Internal CheckSum Test\n"
-                  "  --checksum       Internal CheckSum Test\n"
-                  "  -M        MetaData Entries\n"
-                  "  --metadata        MetaData Entries\n"
-                  "  -F        Favicon\n"
-                  "  --favicon        Favicon\n"
-                  "  -P        Main page\n"
-                  "  --main        Main page\n"
-                  "  -R        Redundant data check\n"
-                  "  --redundant        Redundant data check\n"
-                  "  -U        URL checks\n"
-                  "  --url_internal        URL checks\n"
-                  "  -X        External Dependency check\n"
-                  "  --url_external        External Dependency check\n"
-                  "  -E        MIME checks\n"
-                  "  --mime        MIME checks\n"
-                  "  -D        Lists Details of the errors in the ZIM file.\n"
-                  "  --details        Lists Details of the errors in the ZIM file.\n"
-                  "\n"
-                  "examples:\n"
-                  "  " << argv[0] << " -A wikipedia.zim\n"
-                  "  " << argv[0] << " -C wikipedia.zim\n"
-                  "  " << argv[0] << " -F -R wikipedia.zim\n"
-                  "  " << argv[0] << " -MI wikipedia.zim\n"
-                  "  " << argv[0] << " -U wikipedia.zim\n"
-                  "  " << argv[0] << " -R -U wikipedia.zim\n"
-                  "  " << argv[0] << " -R -U -MI wikipedia.zim\n"
-                  << std::flush;
-        return -1;
-    }
-
 
     //Parsing through arguments using getopt_long(). Both long and short arguments are allowed.
     while (1)
@@ -435,7 +442,7 @@ int main (int argc, char **argv)
             if (optopt == 'c')
                 std::cerr<<"Option "<<(char)optopt<<" requires an argument.\n"
                          "options:\n"
-                         "  -A        run all tests. Default if no flags are given.\n"
+                         "  -A , --all        run all tests. Default if no flags are given.\n"
                          "  -C        Internal CheckSum Test\n"
                          "  -M        MetaData Entries\n"
                          "  -F        Favicon\n"
@@ -463,69 +470,38 @@ int main (int argc, char **argv)
         default:
             abort ();
         }
-        if(optind<argc)
-        {
-            filename=argv[optind];
-        }
-        else
-        {
-            std::cout<<"File Name not given as argument\n";
-            return -1   ;
-        }
     }
+
+    //Displaying Help for --help argument
     if(help)
     {
-        std::cout<<"\n"
-        "zimcheck\n"
-        "Written by : Kiran Mathew Koshy\n"
-    "(kiranmathewkoshy@gmail.com)\n"
-
-
-    "This is a tool which can be used to check the quality of a ZIM file\n."
-    "Here's a list of the checks that  are done on a ZIM file:\n"
-    "1 - Internal checksum: launch internal checksum verification\n"
-    "2 - Metadata Entries: checks if all metadata entries are present in the ZIM file.\n"
-    "3 - Favicon: Checks if the favicon is present in the ZIM file.\n"
-    "4 - Main Page entry: Checks wether the main page is present, and that it points to a valid article.\n"
-    "5 - Redundant data check: Checks if there are any redundant articles.\n"
-    "6 - Internal URL check: checks all interla URLs to make sure that they are valid URLs.\n"
-    "7 - Searching for External Dependencies: The ZIM file is searched for external dependencies.\n"
-    "8 - MIME type check: checks the validity of MIME type of all articles in the ZIM file.\n"
-    "To list the details of the error reported, add a flag -D.\n"
-    "For most errors, the details of the error will be quite lengthy, so it is reccomended that the user redirect the output to a file.\n"
-    "Usage:\n"
-    "./zimcheckusage: ./zimcheck [options] zimfile\n"
-    "options:\n"
-    "-A        run all tests. Default if no flags are given.\n"
-    "-C        Internal CheckSum Test\n"
-    "-M        MetaData Entries\n"
-    "-F        Favicon\n"
-    "-P        Main page\n"
-    "-R        Redundant data check\n"
-    "-U        URL checks\n"
-    "-E        MIME checks\n"
-    "-D         Details of error\n"
-    "-H        Displays Help\n"
-    "examples:\n"
-    "./zimcheck -A wikipedia.zim\n"
-  "./zimcheck -C wikipedia.zim\n"
-  "./zimcheck -F -R wikipedia.zim\n"
-  "./zimcheck -MI wikipedia.zim\n"
-  "./zimcheck -U wikipedia.zim\n"
-  "./zimcheck -R -U wikipedia.zim\n"
-  "./zimcheck -R -U -MI wikipedia.zim\n";
-    return 0;
+        display_help();
+        return -1;
     }
 
     //If no arguments are given to the program, all the tests are performed.
     if((run_all||checksum||metadata||favicon||main_page||redundant_data||url_check||url_check_external||mime_check||help)==false)
         no_args=true;
 
+    //Obtaining filename from argument list
+    filename="";
+    for(int i=0;i<argc;i++)
+    {
+        if(argv[i][0]!='-'&&i!=0)
+        {
+            filename=argv[i];
+        }
+    }
+    if(filename=="")
+    {
+        std::cerr<<"No file provided as argument\n";
+        return -1;
+    }
     //Tests.
     try
     {
         bool test_=false;
-        zim::File f(argv[argc-1]);
+        zim::File f(filename);
         std::cout<<"\nRunning Tests...";
         int c=f.getFileheader().getArticleCount();
         //Test 1: Internal Checksum
