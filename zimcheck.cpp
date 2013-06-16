@@ -502,21 +502,20 @@ int main (int argc, char **argv)
     {
         bool test_=false;
         zim::File f(filename);
-        std::cout<<"\nRunning Tests...";
+        std::cout<<"\nzimcheck";
         int c=f.getFileheader().getArticleCount();
         //Test 1: Internal Checksum
         if(run_all||checksum||no_args)
         {
-            std::cout<<"\nTest 1: Internal Checksum: ";
+            std::cout<<"\n[INFO] Verifying Internal Checksum.. ";
             if(f.verify())
-                std::cout<<"Pass\n";
+                std::cout<<"\n[INFO] Internal checksum found correct";
             else
             {
-                std::cout<<"Fail\n";
+                std::cout<<"\n[ERROR] Wrong Checksum in ZIM file";
                 if(error_details)
                 {
-                    std::cout<<"Details: \n";
-                    std::cout<<"ZIM File Checksum: "<<f.getChecksum()<<"\n";
+                    std::cout<<"\n[ERROR] ZIM File Checksum in file: "<<f.getChecksum();
                 }
             }
             overall_status&=test_;
@@ -526,7 +525,7 @@ int main (int argc, char **argv)
         //The file is searched for the compulsory metadata entries.
         if(run_all||metadata||no_args)
         {
-            std::cout<<"\nTest  2: Metadata Entries: ";
+            std::cout<<"\n[INFO] Searching for metadata entries..";
             bool test_meta[6];
             for(int i=0; i<6; i++)
                 test_meta[i]=false;
@@ -550,25 +549,24 @@ int main (int argc, char **argv)
                 if(!test_meta[i])
                     test_=false;
             if(test_)
-                std::cout<<"Pass\n";
+                std::cout<<"\n[INFO] All essential metadata entries found";
             else
             {
-                std::cout<<"Fail\n";
+                std::cout<<"\n[ERROR] Missing metadata entries ";
                 if(error_details)
                 {
-                    std::cout<<"Details: \n";
                     if(!test_meta[0])
-                        std::cout<<"Title not found in Metadata\n";
+                        std::cout<<"\n[ERROR] Title not found in Metadata";
                     if(!test_meta[1])
-                        std::cout<<"Creator not found in Metadata\n";
+                        std::cout<<"\n[ERROR] Creator not found in Metadata";
                     if(!test_meta[2])
-                        std::cout<<"Publisher not found in Metadata\n";
+                        std::cout<<"\n[ERROR] Publisher not found in Metadata";
                     if(!test_meta[3])
-                        std::cout<<"Date not found in Metadata\n";
+                        std::cout<<"\n[ERROR] Date not found in Metadata";
                     if(!test_meta[4])
-                        std::cout<<"Description not found in Metadata\n";
+                        std::cout<<"\n[ERROR] Description not found in Metadata";
                     if(!test_meta[5])
-                        std::cout<<"Language not found in Metadata\n";
+                        std::cout<<"\n[ERROR] Language not found in Metadata";
                 }
             }
             overall_status&=test_;
@@ -577,7 +575,7 @@ int main (int argc, char **argv)
         //Test 3: Test for Favicon.
         if(run_all||favicon||no_args)
         {
-            std::cout<<"\nTest 3: Test for Favicon: ";
+            std::cout<<"\n[INFO] Searching for Favicon.. ";
             test_=false;
             for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
             {
@@ -587,11 +585,11 @@ int main (int argc, char **argv)
             }
             if(test_)
             {
-                std::cout<<"Pass\n";
+                std::cout<<"\n[INFO] Favicon found.";
             }
             else
             {
-                std::cout<<"Fail\n";
+                std::cout<<"\n[ERROR] Favivon not found in ZIM file.";
             }
             overall_status&=test_;
         }
@@ -601,7 +599,7 @@ int main (int argc, char **argv)
         if(run_all||main_page||no_args)
         {
             test_=true;
-            std::cout<<"\nTest 4: Main Page Entry: ";
+            std::cout<<"\n[INFO] Searching for main page.. ";
             zim::Fileheader fh=f.getFileheader();
             if(!fh.hasMainPage())
                 test_=false;
@@ -611,13 +609,13 @@ int main (int argc, char **argv)
                     test_=false;
             }
             if(test_)
-                std::cout<<"Pass\n";
+                std::cout<<"\n[INFO] Main page found in ZIM file.";
             else
             {
-                std::cout<<"Fail\n";
+                std::cout<<"\n[ERROR] Main page article not found in file.";
                 if(error_details)
                 {
-                    std::cout<<"Main Page Index stored in File Header: "<<fh.getMainPage()<<"\n";
+                    std::cout<<"\n[ERROR]Main Page Index stored in File Header: "<<fh.getMainPage();
                 }
             }
             overall_status&=test_;
@@ -631,8 +629,7 @@ int main (int argc, char **argv)
         //Once the list of articles are created, they are compared one by one to see if they have the same content.If they do, it is reported to the user.
         if(run_all||redundant_data||no_args)
         {
-            std::cout<<"\nTest 5: Redundant data: \n"<<std::flush;
-
+            std::cout<<"\n[INFO] Searching for redundant articles..\n"<<std::flush;
             test_=false;
             int max=0;
             int k;
@@ -735,7 +732,7 @@ int main (int argc, char **argv)
                 if(s1==s2)
                 {
                     test_=false;
-                    output_details+="\nArticles ";
+                    output_details+="\n[ERROR] Articles ";
                     output_details+=std::to_string(to_verify[i].first);
                     output_details+=" and ";
                     output_details+=std::to_string(to_verify[i].second);
@@ -744,12 +741,12 @@ int main (int argc, char **argv)
                 progress.report();
             }
             if(test_)
-                std::cout<<"\nPass\n";
+                std::cout<<"\n[INFO] No redundant articles found in ZIM file";
             else
             {
-                std::cout<<"\nFail\n";
+                std::cout<<"\n[ERROR] Redundant articles have been found in ZIM file.";
                 if(error_details)
-                    std::cout<<"Details: "<<output_details;
+                    std::cout<<"\nDetails: "<<output_details;
             }
             overall_status&=test_;
         }
@@ -762,7 +759,7 @@ int main (int argc, char **argv)
         //Each URL obtained is compared with the hash.
         if(run_all||url_check||no_args)
         {
-            std::cout<<"\nTest 6: Verifying Internal URLs : \n"<<std::flush;
+            std::cout<<"\n[INFO] Verifying internal URLs..\n"<<std::flush;
             std::vector < std::vector<std::string> >titles;
             titles.resize(256);
             std::string ar;
@@ -805,7 +802,7 @@ int main (int argc, char **argv)
                                     index=it->getIndex();
                                     if((previousLink!=links[i])&&(previousIndex!=index))
                                     {
-                                        output_details+="\nArticle '";
+                                        output_details+="\n[ERROR] Article '";
                                         output_details+=links[i];
                                         output_details+="' was not found. Linked in Article ";
                                         output_details+=std::to_string(index);
@@ -821,13 +818,13 @@ int main (int argc, char **argv)
                 progress.report();
             }
             if(test_)
-                std::cout<<"\nPass\n";
+                std::cout<<"\n[INFO] All internal URLs are valid";
             else
             {
-                std::cout<<"\nFail\n";
+                std::cout<<"\n[ERROR] Invalid internal URLs found in ZIM file.";
                 if(error_details)
                 {
-                    std::cout<<"Details: "<<output_details<<" ";
+                    std::cout<<"\nDetails: "<<output_details<<" ";
                 }
             }
             overall_status&=test_;
@@ -839,7 +836,7 @@ int main (int argc, char **argv)
         if(run_all||url_check_external||no_args)
         {
             int found_count=0;
-            std::cout<<"\nTest 7: Searching for External Dependencies: \n"<<std::flush;
+            std::cout<<"\n[INFO] Searching for External Dependencies: \n"<<std::flush;
             progress.initialise('#',c);
             std::list<std::string> externalDependencyList;
             test_=true;
@@ -864,25 +861,23 @@ int main (int argc, char **argv)
                 progress.report();
             }
             if(test_)
-                std::cout<<"\nPass\n"<<std::flush;
+                std::cout<<"\n[INFO] No external dependencies found."<<std::flush;
             else
             {
-                std::cout<<"\nFail\n"<<std::flush;
+                std::cout<<"\n[ERROR] External Dependencies were found in file."<<std::flush;
                 if(error_details)
                 {
                     externalDependencyList.sort();
-                    std::cout<<"External Dependencies found in the following Articles:\n"<<std::flush;
                     std::list<std::string>::iterator prev=externalDependencyList.begin();
-                    std::cout<<"\n"<<*prev;
+                    std::cout<<"\n[ERROR] External dependencies were found in article '"<<*prev<<"'";
                     for(std::list<std::string>::iterator i=(++prev);i!=externalDependencyList.end();++i)
                     {
                         if(*i!=*prev)
-                            std::cout<<"\n"<<*i<<std::flush;
+                            std::cout<<"\n[ERROR] External dependencies were found in article '"<<*i<<"'"<<std::flush;
                         prev=i;
                     }
                 }
             }
-            std::cout<<"\n"<<externalDependencyList.size()<<"\n"<<std::flush;
             overall_status&=test_;
         }
 
@@ -909,15 +904,15 @@ int main (int argc, char **argv)
                     }
                 }
         */
-        std::cout<<"\nOverall Test Status: "<<std::flush;
+        std::cout<<"\n[INFO]Overall Test Status: "<<std::flush;
         if(overall_status)
-            std::cout<<"Pass\n"<<std::flush;
+            std::cout<<"Pass"<<std::flush;
         else
-            std::cout<<"Fail\n"<<std::flush;
+            std::cout<<"Fail"<<std::flush;
         time(&endTime);
 
         timeDiffference=difftime(endTime,startTime);
-        std::cout<<"\nTotal time taken: "<<timeDiffference<<" seconds.\n"<<std::flush;
+        std::cout<<"\n[INFO]Total time taken by zimcheck: "<<timeDiffference<<" seconds.\n"<<std::flush;
 
     }
     catch (const std::exception& e)
