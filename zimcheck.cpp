@@ -161,7 +161,7 @@ public:
 };
 
 int adler32(std::string buf)                        //Adler32 Hash Function. Used to hash the BLOB data obtained from each article, for redundancy checks.
-{
+{                                                   //Please note that the adler32 hash function has a high number of collisions, and that the hash match is not taken as final.
     unsigned int s1 = 1;
     unsigned int s2 = 0;
     unsigned int sz=buf.size();
@@ -173,22 +173,22 @@ int adler32(std::string buf)                        //Adler32 Hash Function. Use
     return (s2 << 16) | s1;
 }
 
-bool is_external_url(std::string *s)       //Checks if an external URL is a wikipedia URL.
+inline bool is_external_url(std::string *input_string)       //Checks if an external URL is a wikipedia URL.
 {
-    if(std::regex_match( *s,std::regex(".*.wikipedia.org/.*")))
+    if(std::regex_match( *input_string,std::regex(".*.wikipedia.org/.*")))
         return false;
 
-    if(std::regex_match( *s,std::regex("/./.*")))
+    if(std::regex_match( *input_string,std::regex("/./.*")))
         return false;
 
-    if(std::regex_match( *s,std::regex(".*.wikimedia.org/.*")))
+    if(std::regex_match( *input_string,std::regex(".*.wikimedia.org/.*")))
         return  false;
     return true;
 }
 
-bool is_internal_url(std::string *s)                 //Checks if a URL is an internal URL or not. Uses RegExp.
+inline bool is_internal_url(std::string *input_string)                 //Checks if a URL is an internal URL or not. Uses RegExp.
 {
-    if(std::regex_match( *s,std::regex("/./.*")))
+    if(std::regex_match( *input_string,std::regex("/./.*")))
         return true;
     else
         return false;
@@ -602,7 +602,6 @@ int main (int argc, char **argv)
             //Adding data to hash Tree.
             //std::cout<<"\nAdding Data to Hash Tables from file...\n"<<std::flush;
             int i = 0;
-            char arr[100000];
             std::string ar;
             zim::Blob bl;
             progress.initialise( '#' , c , 16);
