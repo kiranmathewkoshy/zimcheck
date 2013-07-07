@@ -73,6 +73,35 @@ void getLinks(std::string page, std::vector <std::string> *links)           //Re
     }
 }
 
+void getDependencies(std::string page, std::vector <std::string> *links)           //Returns a vector of the links in a particular page. includes links under 'href' and 'src'
+{
+    int sz=page.size();
+    links->clear();
+    int startingPoint,length;
+    for(int i = 0; i< sz; i++)
+    {
+        if(page[i] == ' ' && i+5 < sz)
+        {
+            if( (page[i+1] == 's') && (page[i+2] == 'r') && (page[i+3]=='c'))      //Links under 'src' category.
+            {
+                i += 4;
+                while(page[i] != '=')
+                    i++;
+                while(page[i] != '"')
+                    i++;
+                startingPoint= ++i;
+
+                while(page[i] != '"')
+                {
+                    i++;
+                }
+                length=i-startingPoint;
+                links->push_back(page.substr(startingPoint,length));
+            }
+        }
+    }
+}
+
 class progress_bar                                  //Class for implementing a progress bar(used in redundancy, url and MIME checks).
 {
 private:
@@ -836,7 +865,7 @@ int main (int argc, char **argv)
             {
                 if( it -> getMimeType() == "text/html" )
                 {
-                    getLinks( it -> getPage() , &links );
+                    getDependencies( it -> getPage() , &links );
                     for(unsigned int i=0; i< links.size(); i++)
                     {
                         if( isExternalUrl( &links[i] ) )
