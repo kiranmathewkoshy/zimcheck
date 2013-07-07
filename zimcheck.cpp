@@ -28,52 +28,6 @@
 #include <regex>
 #include <ctime>
 
-std::vector <std::string> get_links2(std::string page)           //Returns a vector of the links in a particular page. includes links under 'href' and 'src'
-{
-    std::vector <std::string> links;
-    int sz=page.size();
-    for(int i = 0; i < sz; i++)
-    {
-        if(page[i] == ' ' && (i+5) < sz)
-        {
-            if(page[i+1] == 'h' && page[i+2] == 'r' && page[i+3] == 'e' && page[i+4] == 'f')      //Links under 'href' category.
-            {
-                i+= 5;
-                while(page[i] != '=')
-                    i++;
-                while(page[i] != '"')
-                    i++;
-                i++;
-                std::string link="";
-                while(page[i] != '"')
-                {
-                    link += page[i];
-                    i++;
-                }
-                links.push_back(link);
-            }
-
-            if(page[i+1] == 's' && page[i+2] == 'r' && page[i+3] == 'c')      //Links under 'src' category.
-            {
-                i+= 4;
-                while(page[i] != '=')
-                    i++;
-                while(page[i] != '"')
-                    i++;
-                i++;
-                std::string link="";
-                while(page[i] != '"')
-                {
-                    link += page[i];
-                    i++;
-                }
-                links.push_back(link);
-            }
-        }
-    }
-    return links;
-}
-
 void get_links(std::string page, std::vector <std::string> *links)           //Returns a vector of the links in a particular page. includes links under 'href' and 'src'
 {
     int sz=page.size();
@@ -118,6 +72,7 @@ void get_links(std::string page, std::vector <std::string> *links)           //R
         }
     }
 }
+
 
 
 class progress_bar                                  //Class for implementing a progress bar(used in redundancy, url and MIME checks).
@@ -706,7 +661,7 @@ int main (int argc, char **argv)
             //std::cout<<"\nVerifying Similar Articles for redundancies.. \n"<<std::flush;
             progress.initialise( '#' , to_verify.size() , 16);
             std::string output_details;
-            for(int i=0; i < to_verify.size(); i++)
+            for(unsigned int i=0; i < to_verify.size(); i++)
             {
                 bool op = false;
                 zim::File::const_iterator it = f.begin();
@@ -773,7 +728,7 @@ int main (int argc, char **argv)
                 if( it -> getMimeType() == "text/html")
                 {
                     get_links( it -> getPage() , &links);
-                    for(int i = 0; i < links.size(); i++)
+                    for(unsigned int i = 0; i < links.size(); i++)
                     {
                         //std::cout<<"\n"<<links[i]<<std::flush;
                         links[i] = process_links( links[i] );
@@ -836,7 +791,7 @@ int main (int argc, char **argv)
                 if( it -> getMimeType() == "text/html" )
                 {
                     get_links( it -> getPage() , &links );
-                    for( int i=0; i< links.size(); i++)
+                    for(unsigned int i=0; i< links.size(); i++)
                     {
                         if( is_external_url( &links[i] ) )
                         {
