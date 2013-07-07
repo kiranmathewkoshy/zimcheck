@@ -73,8 +73,6 @@ void getLinks(std::string page, std::vector <std::string> *links)           //Re
     }
 }
 
-
-
 class progress_bar                                  //Class for implementing a progress bar(used in redundancy, url and MIME checks).
 {
 private:
@@ -281,6 +279,7 @@ int main (int argc, char **argv)
     bool error_details = false;
     bool no_args = false;
     bool help = false;
+    bool prog=false;
     int aflag = 0;
     int bflag = 0;
     int index;
@@ -305,10 +304,11 @@ int main (int argc, char **argv)
             { "mime",  no_argument,       0, 'E'},
             { "details",  no_argument,       0, 'D'},
             { "help",  no_argument,       0, 'H'},
+            { "progress",  no_argument,       0, 'B'},
             { 0, 0, 0, 0}
         };
         int option_index = 0;
-        c = getopt_long (argc, argv, "ACMFPRUXEDHacmfpruxedh",
+        c = getopt_long (argc, argv, "ACMFPRUXEDHBacmfpruxedhb",
                          long_options, &option_index);
         //c = getopt (argc, argv, "ACMFPRUXED");
         if(c == -1)
@@ -335,6 +335,9 @@ int main (int argc, char **argv)
             break;
         case 'F':
             favicon = true;
+            break;
+        case 'B':
+            prog = true;
             break;
         case 'f':
             favicon = true;
@@ -380,6 +383,9 @@ int main (int argc, char **argv)
             break;
         case 'h':
             help=true;
+            break;
+        case 'b':
+            prog=true;
             break;
         case '?':
             if (optopt == 'c')
@@ -573,17 +579,24 @@ int main (int argc, char **argv)
         //Once the list of articles are created, they are compared one by one to see if they have the same content.If they do, it is reported to the user.
         if( run_all || redundant_data || no_args)
         {
-            std::cout << "\n[INFO] Searching for redundant articles..\n" << std::flush;
+            std::cout << "\n[INFO] Searching for redundant articles.." << std::flush;
             test_ = false;
             int max = 0;
             int k;
-            progress.initialise( '#' , c , 16);
+            if(prog)
+            {
+                std::cout<<"\n"<<std::flush;
+                progress.initialise( '#' , c , 16);
+            }
             for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
             {
                 k= it -> getArticleSize();
                 if( k > max )
                     max = k;
-                progress.report();
+                if(prog)
+                {
+                    progress.report();
+                }
             }
             //Data Storage system
 
@@ -604,7 +617,10 @@ int main (int argc, char **argv)
             int i = 0;
             std::string ar;
             zim::Blob bl;
-            progress.initialise( '#' , c , 16);
+            if(prog)
+            {
+                progress.initialise( '#' , c , 16);
+            }
             int sz = 0;
             for (zim::File::const_iterator it = f.begin(); it != f.end(); ++it)
             {
@@ -617,24 +633,35 @@ int main (int argc, char **argv)
                 article.second = i;
                 hash_main[ ar.size() ].push_back( article );
                 i++;
-                progress.report();
+                if(prog)
+                {
+                    progress.report();
+                }
             }
             //Checking through hash tree for redundancies.
             //Sorting the hash tree.
             //std::cout<<"\nSorting Hash Tree...\n"<<std::flush;
             int hash_main_size = hash_main.size();
-            progress.initialise( '#' , hash_main_size , 16);
+            if(prog)
+            {
+                progress.initialise( '#' , hash_main_size , 16);
+            }
             for(int i = 0; i < hash_main_size; i++)
             {
                 hash_main[i].sort();
-                progress.report();
+                if(prog)
+                {
+                    progress.report();
+                }
             }
             std::vector< std::pair< int , int > > to_verify;     //Vector containing list of pairs of articles whose hash has been found to be the same.
             //The above list of pairs of articles will be compared directly for redundancies.
 
 
-
-            progress.initialise( '#' , hash_main_size , 16 );
+            if(prog)
+            {
+                progress.initialise( '#' , hash_main_size , 16 );
+            }
             for(int i = 0; i< hash_main_size; i++)
             {
                 std::list< std::pair< unsigned int, int > >::iterator it = hash_main[i].begin();
@@ -654,11 +681,17 @@ int main (int argc, char **argv)
                     prev.second = it -> second;
                     prev.first = it -> first;
                 }
-                progress.report();
+                if(prog)
+                {
+                    progress.report();
+                }
             }
             test_ = true;
             //std::cout<<"\nVerifying Similar Articles for redundancies.. \n"<<std::flush;
-            progress.initialise( '#' , to_verify.size() , 16);
+            if(prog)
+            {
+                progress.initialise( '#' , to_verify.size() , 16);
+            }
             std::string output_details;
             for(unsigned int i=0; i < to_verify.size(); i++)
             {
@@ -681,7 +714,10 @@ int main (int argc, char **argv)
                     output_details += std::to_string( to_verify[i].second );
                     output_details += " have the same content";
                 }
-                progress.report();
+                if(prog)
+                {
+                    progress.report();
+                }
             }
             if( test_ )
                 std::cout << "\n[INFO] No redundant articles found in ZIM file";
@@ -702,7 +738,7 @@ int main (int argc, char **argv)
         //Each URL obtained is compared with the hash.
         if( run_all || url_check || no_args)
         {
-            std::cout << "\n[INFO] Verifying internal URLs..\n" << std::flush;
+            std::cout << "\n[INFO] Verifying internal URLs.."<< std::flush;
             std::vector < std::vector <std::string> >titles;
             titles.resize( 256 );
             std::string ar;
@@ -714,7 +750,11 @@ int main (int argc, char **argv)
             {
                 std::sort( titles[i].begin() , titles[i].end() );
             }
-            progress.initialise( '#' , c );
+            if(prog)
+            {
+                std::cout<<"\n"<<std::flush;
+                progress.initialise( '#' , c );
+            }
             test_ = true;
             std::string output_details;
             std::string previousLink;
@@ -759,7 +799,10 @@ int main (int argc, char **argv)
                         }
                     }
                 }
-                progress.report();
+                if(prog)
+                {
+                    progress.report();
+                }
             }
             if( test_ )
                 std::cout << "\n[INFO] All internal URLs are valid";
@@ -780,8 +823,12 @@ int main (int argc, char **argv)
         if( run_all || url_check_external || no_args )
         {
             int found_count = 0;
-            std::cout << "\n[INFO] Searching for External Dependencies: \n" << std::flush;
-            progress.initialise( '#' , c );
+            std::cout << "\n[INFO] Searching for External Dependencies:"<< std::flush;
+            if(prog)
+            {
+                std::cout<<"\n"<<std::flush;
+                progress.initialise( '#' , c );
+            }
             std::list < std::string > externalDependencyList;
             test_ = true ;
             std::vector< std::string > links;
@@ -799,7 +846,10 @@ int main (int argc, char **argv)
                         }
                     }
                 }
-                progress.report();
+                if(prog)
+                {
+                    progress.report();
+                }
             }
             if( test_)
                 std::cout << "\n[INFO] No external dependencies found." << std::flush;
