@@ -241,6 +241,7 @@ bool is_internal_url(std::string *s)                 //Checks if a URL is an int
 
 //Removes extra spaces from URLs. Usually done by the browser, so web authors sometimes tend to ignore it.
 //Converts the %20 to space.Essential for comparing URLs.
+
 std::string process_links(std::string input)
 {
     std::string output;
@@ -463,7 +464,7 @@ int main (int argc, char **argv)
                          "  " << argv[0] << " -R -U -MI wikipedia.zim\n"
                          << std::flush;
             else if (isprint (optopt))
-                std::cerr<<"Unknown option `"<<optopt<<"'.\n";
+                std::cerr<<"Unknown option `"<<(char)optopt<<"'.\n";
             else
                 std::cerr<<"Unknown option character `\\x"<<optopt<<"'.\n";
             return 1;
