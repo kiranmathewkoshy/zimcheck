@@ -274,21 +274,8 @@ void display_help()
        std::cout<<"\n"
         "zimcheck\n"
         "Written by : Kiran Mathew Koshy\n"
-    "(kiranmathewkoshy@gmail.com)\n"
-
-
-    "This is a tool which can be used to check the quality of a ZIM file\n."
-    "Here's a list of the checks that  are done on a ZIM file:\n"
-    "1 - Internal checksum: launch internal checksum verification\n"
-    "2 - Metadata Entries: checks if all metadata entries are present in the ZIM file.\n"
-    "3 - Favicon: Checks if the favicon is present in the ZIM file.\n"
-    "4 - Main Page entry: Checks wether the main page is present, and that it points to a valid article.\n"
-    "5 - Redundant data check: Checks if there are any redundant articles.\n"
-    "6 - Internal URL check: checks all interla URLs to make sure that they are valid URLs.\n"
-    "7 - Searching for External Dependencies: The ZIM file is searched for external dependencies.\n"
-    "8 - MIME type check: checks the validity of MIME type of all articles in the ZIM file.\n"
+    "A to check the quality of a ZIM file\n."
     "To list the details of the error reported, add a flag -D.\n"
-    "For most errors, the details of the error will be quite lengthy, so it is reccomended that the user redirect the output to a file.\n"
     "Usage:\n"
     "./zimcheckusage: ./zimcheck [options] zimfile\n"
     "options:\n"
@@ -496,6 +483,7 @@ int main (int argc, char **argv)
     if(filename=="")
     {
         std::cerr<<"No file provided as argument\n";
+        display_help();
         return -1;
     }
     //Tests.
@@ -905,7 +893,7 @@ int main (int argc, char **argv)
                     }
                 }
         */
-        std::cout<<"\n[INFO]Overall Test Status: "<<std::flush;
+        std::cout<<"\n[INFO] Overall Test Status: "<<std::flush;
         if(overall_status)
             std::cout<<"Pass"<<std::flush;
         else
@@ -913,7 +901,7 @@ int main (int argc, char **argv)
         time(&endTime);
 
         timeDiffference=difftime(endTime,startTime);
-        std::cout<<"\n[INFO]Total time taken by zimcheck: "<<timeDiffference<<" seconds.\n"<<std::flush;
+        std::cout<<"\n[INFO] Total time taken by zimcheck: "<<timeDiffference<<" seconds.\n"<<std::flush;
 
     }
     catch (const std::exception& e)
