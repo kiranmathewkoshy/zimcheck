@@ -28,7 +28,7 @@
 #include <regex>
 #include <ctime>
 
-void get_links(std::string page, std::vector <std::string> *links)           //Returns a vector of the links in a particular page. includes links under 'href' and 'src'
+void getLinks(std::string page, std::vector <std::string> *links)           //Returns a vector of the links in a particular page. includes links under 'href' and 'src'
 {
     int sz=page.size();
     links->clear();
@@ -173,7 +173,7 @@ int adler32(std::string buf)                        //Adler32 Hash Function. Use
     return (s2 << 16) | s1;
 }
 
-inline bool is_external_url(std::string *input_string)       //Checks if an external URL is a wikipedia URL.
+inline bool isExternalUrl(std::string *input_string)       //Checks if an external URL is a wikipedia URL.
 {
     if(std::regex_match( *input_string,std::regex(".*.wikipedia.org/.*")))
         return false;
@@ -186,7 +186,7 @@ inline bool is_external_url(std::string *input_string)       //Checks if an exte
     return true;
 }
 
-inline bool is_internal_url(std::string *input_string)                 //Checks if a URL is an internal URL or not. Uses RegExp.
+inline bool isInternalUrl(std::string *input_string)                 //Checks if a URL is an internal URL or not. Uses RegExp.
 {
     if(std::regex_match( *input_string,std::regex("/./.*")))
         return true;
@@ -224,7 +224,7 @@ std::string process_links(std::string input)
     return output.substr( 0 , k);
 }
 
-void display_help()
+void displayHelp()
 {
     std::cout<<"\n"
              "zimcheck\n"
@@ -418,7 +418,7 @@ int main (int argc, char **argv)
     //Displaying Help for --help argument
     if(help)
     {
-        display_help();
+        displayHelp();
         return -1;
     }
 
@@ -438,7 +438,7 @@ int main (int argc, char **argv)
     if(filename == "")
     {
         std::cerr<<"No file provided as argument\n";
-        display_help();
+        displayHelp();
         return -1;
     }
     //Tests.
@@ -726,13 +726,13 @@ int main (int argc, char **argv)
             {
                 if( it -> getMimeType() == "text/html")
                 {
-                    get_links( it -> getPage() , &links);
+                    getLinks( it -> getPage() , &links);
                     for(unsigned int i = 0; i < links.size(); i++)
                     {
                         //std::cout<<"\n"<<links[i]<<std::flush;
                         links[i] = process_links( links[i] );
                         //std::cout<<"\n"<<links[i]<<std::flush;
-                        if(is_internal_url( &links[i] ) )
+                        if(isInternalUrl( &links[i] ) )
                         {
                             k++;
                             bool found = false;
@@ -789,10 +789,10 @@ int main (int argc, char **argv)
             {
                 if( it -> getMimeType() == "text/html" )
                 {
-                    get_links( it -> getPage() , &links );
+                    getLinks( it -> getPage() , &links );
                     for(unsigned int i=0; i< links.size(); i++)
                     {
-                        if( is_external_url( &links[i] ) )
+                        if( isExternalUrl( &links[i] ) )
                         {
                             test_ = false;
                             externalDependencyList.push_back( it -> getUrl() );
