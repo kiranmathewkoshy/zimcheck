@@ -406,8 +406,8 @@ int main (int argc, char **argv)
                 bl = it-> getData();
                 sz = bl.size();
                 ar.clear();
-                for(int i=0; i < sz; i++)
-                    ar += bl.data()[i];
+                for(int j=0; j < sz; j++)
+                    ar += bl.data()[j];
                 article.first = adler32(ar);
                 article.second = i;
                 hash_main[ ar.size() ].push_back( article );
@@ -488,9 +488,9 @@ int main (int argc, char **argv)
                 {
                     test_ = false;
                     output_details += "\n[ERROR] Articles ";
-                    output_details += std::to_string( to_verify[i].first );
+                    output_details += std::to_string( (long long)to_verify[i].first );
                     output_details += " and ";
-                    output_details += std::to_string( to_verify[i].second );
+                    output_details += std::to_string( (long long)to_verify[i].second );
                     output_details += " have the same content";
                 }
                 if(prog)
@@ -515,6 +515,8 @@ int main (int argc, char **argv)
         //If the internal URL is not valid, an error is reported.
         //A list of Titles are collected from the file, and stored as a hash, similar to the way the hash is stored for redundancy check.
         //Each URL obtained is compared with the hash.
+
+
         if( run_all || url_check || no_args)
         {
             std::cout << "\n[INFO] Verifying internal URLs.."<< std::flush;
@@ -568,7 +570,7 @@ int main (int argc, char **argv)
                                         output_details += "\n[ERROR] Article '";
                                         output_details += links[i];
                                         output_details += "' was not found. Linked in Article ";
-                                        output_details += std::to_string( index );
+                                        output_details += std::to_string(index );
                                         previousLink = links[i];
                                         previousIndex = index;
                                     }
